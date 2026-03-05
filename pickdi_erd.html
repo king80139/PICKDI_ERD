@@ -151,13 +151,13 @@ var TABLES = [
     {k:'',n:'invoice_email_2',t:'VARCHAR',d:'세금계산서 담당자 이메일 2'},
     {k:'fk',n:'bill_id',t:'VARCHAR',d:'팀 청구 정보 참조'}
   ]},
-  {id:'contract_master',name:'Contract_Master',theme:'contract',tag:'CONTRACT',x:60,y:420,fields:[
+  {id:'contract_master',name:'Contract_Master',theme:'contract',tag:'CONTRACT',x:220,y:350,fields:[
     {k:'pk',n:'contract_id',t:'VARCHAR',d:'계약 고유 번호 (YY-포지션-순서)\n\n포지션별 번호:\n01 – PICKDI\n02 – Designer/Video Editor\n03 – CS\n04 – Marketing/Social Media\n05 – Market Research\n06 – IT'},
-    {k:'',n:'month',t:'DATE',d:'계약 월'},
-    {k:'',n:'contract_effective',t:'DATE'},
-    {k:'fk',n:'member_id',t:'FK -> Member'},
+    {k:'',n:'placement_id',t:'VARCHAR',d:'멤버-팀 배치 단위. 한 사람이 한 팀과의 계약 관계 묶음. PL-000001 형식 자동발급. Register 입력 시 gap≤30일이면 기존 재사용, >30일이면 신규'},
+    {k:'fk',n:'member_id',t:'FK -> Member',d:'계층: member → placement → contract'},
     {k:'fk',n:'team_id',t:'FK -> Team'},
-    {k:'',n:'type (Original/Extension/Amend)',t:'ENUM'},
+    {k:'',n:'contract_effective',t:'DATE',d:'Amendment 적용 시작일. 정산 조회: contract_effective <= 정산기준월 인 최근 행'},
+    {k:'',n:'type (Original/Extension/Amendment)',t:'ENUM',d:'Original=첫계약, Extension=연장, Amendment=변경'},
     {k:'',n:'position',t:'VARCHAR'},
     {k:'',n:'tier (Trial/Official/Core)',t:'ENUM'},
     {k:'',n:'monthly_work_hours',t:'INT'},
@@ -170,11 +170,12 @@ var TABLES = [
     {k:'',n:'termination_date',t:'DATE'},
     {k:'',n:'termination_reason',t:'VARCHAR'}
   ]},
-  {id:'contract_register',name:'Contract_Register',theme:'contract',tag:'CONTRACT',x:60,y:870,fields:[
-    {k:'pk',n:'contract_id',t:'VARCHAR'},
+  {id:'contract_register',name:'Contract_Register',theme:'contract',tag:'CONTRACT',x:60,y:650,fields:[
+    {k:'pk',n:'contract_id',t:'VARCHAR',d:'계약 고유 번호. 사람이 입력'},
     {k:'fk',n:'member_id',t:'FK -> Member'},
     {k:'fk',n:'team_id',t:'FK -> Team'},
-    {k:'',n:'type',t:'ENUM'},
+    {k:'',n:'contract_start_date',t:'DATE',d:'계약 시작일. placement_id 발급 시 gap 계산에 사용'},
+    {k:'',n:'type (Original/Extension)',t:'ENUM',d:'신규/연장 계약 등록. Amendment는 Contract_Update 사용'},
     {k:'',n:'position',t:'VARCHAR'},
     {k:'',n:'tier',t:'ENUM'},
     {k:'',n:'monthly_work_hours',t:'INT'},
@@ -183,14 +184,14 @@ var TABLES = [
     {k:'',n:'created_at',t:'DATETIME'},
     {k:'',n:'created_by',t:'VARCHAR'}
   ]},
-  {id:'contract_update',name:'Contract_Update',theme:'contract',tag:'CONTRACT',x:360,y:870,fields:[
-    {k:'fk',n:'contract_id',t:'FK [PK] -> Master'},
-    {k:'',n:'contract_effective',t:'DATE'},
-    {k:'',n:'updated_conditions',t:'JSON'},
+  {id:'contract_update',name:'Contract_Update',theme:'contract',tag:'CONTRACT',x:380,y:650,fields:[
+    {k:'fk',n:'contract_id',t:'FK -> Master',d:'변경 대상 계약. Amendment 시에만 사용'},
+    {k:'',n:'contract_effective',t:'DATE',d:'Amendment 적용 시작일. 필수'},
+    {k:'',n:'updated_conditions',t:'JSON',d:'변경된 컬럼만 입력. 나머지 빈칸'},
     {k:'',n:'created_at',t:'DATETIME'},
     {k:'',n:'created_by',t:'VARCHAR'}
   ]},
-  {id:'contract_elim',name:'Contract_Elimination',theme:'contract',tag:'CONTRACT',x:640,y:870,fields:[
+  {id:'contract_elim',name:'Contract_Elimination',theme:'contract',tag:'CONTRACT',x:640,y:650,fields:[
     {k:'fk',n:'contract_id',t:'FK -> Master'},
     {k:'',n:'termination_reason',t:'VARCHAR'},
     {k:'',n:'termination_detail',t:'TEXT'},
@@ -297,9 +298,9 @@ var RELS = [
   {f:'team',t:'shopl_emp',c:'#22d3ee'},
   {f:'team',t:'prep_bal',c:'#34d399'},
   {f:'team',t:'prep_log',c:'#34d399'},
-  {f:'contract_master',t:'contract_update',c:'#c084fc'},
-  {f:'contract_master',t:'contract_elim',c:'#c084fc'},
   {f:'contract_register',t:'contract_master',c:'#a78bfa'},
+  {f:'contract_update',t:'contract_master',c:'#c084fc'},
+  {f:'contract_master',t:'contract_elim',c:'#c084fc'},
   {f:'contract_master',t:'settlement',c:'#c084fc'},
   {f:'contract_master',t:'expense',c:'#c084fc'},
   {f:'contract_master',t:'discount',c:'#c084fc'},
@@ -312,7 +313,7 @@ var RELS = [
 var GROUPS = [
   {label:'MEMBER',x:60,y:50,c:'#60a5fa'},
   {label:'CLIENT',x:480,y:50,c:'#34d399'},
-  {label:'CONTRACT',x:60,y:385,c:'#c084fc'},
+  {label:'CONTRACT (member→placement→contract)',x:60,y:310,c:'#c084fc'},
   {label:'ATTENDANCE / SHOPL',x:880,y:50,c:'#22d3ee'},
   {label:'SETTLEMENT',x:1160,y:280,c:'#fbbf24'},
   {label:'FINANCE / EXPENSE',x:1160,y:730,c:'#f87171'},
