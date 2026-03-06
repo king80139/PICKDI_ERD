@@ -95,6 +95,15 @@ svg#lines { position:absolute; top:0; left:0; pointer-events:none; overflow:visi
   word-break:keep-all;
 }
 .erd-tooltip.visible { opacity:1; }
+#comment-panel {
+  position:fixed; right:-420px; top:46px; bottom:0; width:400px; background:#111827;
+  border-left:1px solid #1e2535; z-index:99; transition:right 0.3s; overflow-y:auto;
+  padding:16px; box-shadow:-4px 0 20px rgba(0,0,0,0.4);
+}
+#comment-panel.open { right:0; }
+#comment-panel h3 { font-size:12px; color:#94a3b8; margin-bottom:12px; letter-spacing:1px; }
+.tbl-comment { margin-left:6px; opacity:0.6; cursor:pointer; font-size:11px; padding:1px 4px; }
+.tbl-comment:hover { opacity:1; color:#64ffda; }
 </style>
 </head>
 <body>
@@ -120,6 +129,11 @@ svg#lines { position:absolute; top:0; left:0; pointer-events:none; overflow:visi
   <button class="cbtn" id="bplus">+</button>
   <button class="cbtn" id="bminus">&minus;</button>
   <button class="cbtn" id="breset">&#8635;</button>
+  <button class="cbtn" id="bcomment" title="코멘트">&#128172;</button>
+</div>
+<div id="comment-panel">
+  <h3 id="comment-panel-title">코멘트</h3>
+  <div id="utterances-container"></div>
 </div>
 <script>
 var TABLES = [
@@ -439,7 +453,7 @@ TABLES.forEach(function(t) {
 
   var head = document.createElement('div');
   head.className = 'tbl-head';
-  head.innerHTML = '<span class="tbl-nm">' + t.name + '</span><span class="tbl-tag">' + t.tag + '</span>';
+  head.innerHTML = '<span class="tbl-nm">' + t.name + '</span><span class="tbl-comment" data-table="' + t.id + '" title="이 테이블에 코멘트">&#128172;</span><span class="tbl-tag">' + t.tag + '</span>';
   if (t.desc) {
     head.style.cursor = 'help';
     head.addEventListener('mouseenter', function(ev) {
@@ -498,7 +512,13 @@ TABLES.forEach(function(t) {
   canvas.appendChild(div);
   tblMap[t.id] = {el: div, data: t};
 
-  // Drag on header
+  head.querySelector('.tbl-comment').addEventListener('click', function(e) {
+    e.stopPropagation();
+    location.hash = e.target.getAttribute('data-table');
+    document.getElementById('comment-panel').classList.add('open');
+    document.getElementById('comment-panel-title').textContent = t.name + ' 코멘트';
+    loadUtterances();
+  });
   var ox = 0, oy = 0, dragging = false;
   head.addEventListener('mousedown', function(e) {
     e.stopPropagation();
@@ -650,6 +670,24 @@ function applyT() {
 document.getElementById('bplus').onclick = function() { scale = Math.min(2.5, scale * 1.15); applyT(); };
 document.getElementById('bminus').onclick = function() { scale = Math.max(0.15, scale / 1.15); applyT(); };
 document.getElementById('breset').onclick = function() { scale = 0.35; panX = 60; panY = 60; applyT(); };
+document.getElementById('bcomment').onclick = function() {
+  location.hash = '';
+  document.getElementById('comment-panel-title').textContent = '전체 코멘트';
+  document.getElementById('comment-panel').classList.toggle('open');
+  loadUtterances();
+};
+function loadUtterances() {
+  var c = document.getElementById('utterances-container');
+  c.innerHTML = '';
+  var s = document.createElement('script');
+  s.src = 'https://utteranc.es/client.js';
+  s.setAttribute('repo', 'king80139/PICKDI_ERD');
+  s.setAttribute('issue-term', 'url');
+  s.setAttribute('theme', 'github-dark');
+  s.setAttribute('crossorigin', 'anonymous');
+  s.async = true;
+  c.appendChild(s);
+}
 
 setTimeout(applyT, 80);
 </script>
