@@ -65,18 +65,10 @@ svg#lines { position:absolute; top:0; left:0; pointer-events:none; overflow:visi
 .theme-attend .tbl-tag { background:#06b6d422; color:#22d3ee; }
 .theme-prepay .tbl-head { background:linear-gradient(135deg,#3d2010,#4d2815); }
 .theme-prepay .tbl-tag { background:#ea580c22; color:#fb923c; }
-.glabel {
-  position:absolute; font-size:9px; font-weight:700;
-  letter-spacing:3px; opacity:.3; pointer-events:none;
-}
 .section-box {
   position:absolute; border-radius:12px; pointer-events:none;
   border:2px solid;
   background:rgba(0,0,0,0.08);
-}
-.section-box .section-label {
-  position:absolute; top:-22px; left:0; font-size:10px; font-weight:700;
-  letter-spacing:2px; opacity:0.8;
 }
 #ctrls { position:fixed; bottom:16px; right:16px; z-index:100; display:flex; flex-direction:column; gap:6px; }
 .cbtn {
@@ -204,7 +196,7 @@ var TABLES = [
     {k:'',n:'termination_date',t:'DATE',d:'해지 일자 -> contract_term의 termination_date와 동일'},
     {k:'',n:'termination_reason',t:'VARCHAR',d:'해지 사유 (Termination, Resignation, Expiration, Other)'}
   ]},
-  {id:'contract_reg',name:'Contract_Register',theme:'contract',tag:'CONTRACT',x:120,y:1680,desc:'계약 등록 테이블. 첫 계약(Original), 연장(Extension) 등록. 계약 해지 후 재계약 시 gap이 있으면 여기 등록',fields:[
+  {id:'contract_reg',name:'Contract_Register',theme:'contract',tag:'CONTRACT',x:120,y:1700,desc:'계약 등록 테이블. 첫 계약(Original), 연장(Extension) 등록. 계약 해지 후 재계약 시 gap이 있으면 여기 등록',fields:[
     {k:'pk',n:'contract_id',t:'VARCHAR',d:'계약 고유 번호 (YY-포지션-순서)\n\n포지션별 번호:\n01 – PICKDI\n02 – Designer/Video Editor\n03 – CS\n04 – Marketing/Social Media\n05 – Market Research\n06 – IT'},
     {k:'fk',n:'member_id',t:'FK -> Member',d:'멤버 FK'},
     {k:'fk',n:'team_id',t:'FK -> Team',d:'팀 FK'},
@@ -222,21 +214,21 @@ var TABLES = [
     {k:'',n:'final_fee',t:'INTEGER',d:'서비스 이용료(월)'},
     {k:'',n:'created_at',t:'DATETIME',d:'등록 일시'}
   ]},
-  {id:'contract_mem_udt',name:'Contract_Member_Update',theme:'contract',tag:'CONTRACT',x:200,y:1920,desc:'멤버사이드 계약 변경(Amendment) 등록. parent_contract_id→Original, contract_id→변경 계약',fields:[
+  {id:'contract_mem_udt',name:'Contract_Member_Update',theme:'contract',tag:'CONTRACT',x:340,y:1700,desc:'멤버사이드 계약 변경(Amendment) 등록. parent_contract_id→Original, contract_id→변경 계약',fields:[
     {k:'fk',n:'parent_contract_id',t:'FK -> Master',d:'[필수값]변경 대상 Original 계약'},
     {k:'pk',n:'contract_id',t:'PK -> Master',d:'[필수값]변경 계약 번호'},
     {k:'',n:'monthly_work_hours',t:'INT',d:'약정 근무 시간'},
     {k:'',n:'trial_payment',t:'INTEGER',d:'수습 급여(월)'},
     {k:'',n:'official_payment',t:'INTEGER',d:'정규 급여(월)'}
   ]},
-  {id:'contract_cli_udt',name:'Contract_Client_Update',theme:'contract',tag:'CONTRACT',x:450,y:1920,desc:'고객사 사이드 계약 변경(Amendment) 등록. parent_contract_id→Original, contract_id→변경 계약',fields:[
+  {id:'contract_cli_udt',name:'Contract_Client_Update',theme:'contract',tag:'CONTRACT',x:560,y:1700,desc:'고객사 사이드 계약 변경(Amendment) 등록. parent_contract_id→Original, contract_id→변경 계약',fields:[
     {k:'fk',n:'parent_contract_id',t:'FK -> Master',d:'[필수값]변경 대상 Original 계약'},
     {k:'pk',n:'contract_id',t:'PK -> Master',d:'[필수값]변경 계약 번호'},
     {k:'',n:'list_price',t:'INTEGER',d:'서비스 이용료(월)'},
     {k:'',n:'discount_amount',t:'INTEGER',d:'서비스 이용료(월)'},
     {k:'',n:'final_fee',t:'INTEGER',d:'서비스 이용료(월)'}
   ]},
-  {id:'contract_term',name:'Contract_termination',theme:'contract',tag:'CONTRACT',x:520,y:1680,desc:'해당 테이블에 속한 contract_id를 가진 모든 계약들은 해지 처리. (amend contract가 있을 경우 함께 해지 처리)',fields:[
+  {id:'contract_term',name:'Contract_termination',theme:'contract',tag:'CONTRACT',x:670,y:1700,desc:'해당 테이블에 속한 contract_id를 가진 모든 계약들은 해지 처리. (amend contract가 있을 경우 함께 해지 처리)',fields:[
     {k:'fk',n:'contract_id',t:'FK -> Master',d:'해지된 계약 번호'},
     {k:'',n:'termination_reason',t:'VARCHAR',d:'해지 사유 (Termination, Resignation, Expiration, Other) -> contract_master의 termination_reason와 동일'},
     {k:'',n:'termination_detail',t:'TEXT',d:'해지 상세 사유'},
@@ -281,7 +273,7 @@ var TABLES = [
     {k:'',n:'holiday_kr',t:'VARCHAR',d:'한국 공휴일 이름'},
     {k:'',n:'holiday_vn',t:'VARCHAR',d:'베트남 공휴일 이름'}
   ]},
-  {id:'settlement',name:'Settlement (정산시트)',theme:'settle',tag:'BILLING',x:1850,y:450,desc:'정산 정보 output 시트',fields:[
+  {id:'settlement',name:'Settlement (정산시트)',theme:'settle',tag:'BILLING',x:1720,y:400,desc:'정산 정보 output 시트',fields:[
     {k:'fk',n:'team_id',t:'FK -> Team'},
     {k:'fk',n:'contract_id',t:'FK -> Contract_Master'},
     {k:'fk',n:'member_id',t:'FK -> Member'},
@@ -422,11 +414,11 @@ var RELS = [
 
 var SECTIONS = [
   {label:'MEMBER',x:100,y:160,w:320,h:400,c:'#60a5fa'},
-  {label:'CLIENT',x:430,y:160,w:400,h:400,c:'#34d399'},
-  {label:'CONTRACT',x:100,y:1060,w:550,h:950,c:'#c084fc'},
-  {label:'ATTENDANCE / SHOPL',x:1180,y:160,w:500,h:1000,c:'#22d3ee'},
-  {label:'SETTLEMENT',x:1700,y:380,w:400,h:900,c:'#fbbf24'},
-  {label:'FINANCE / PREPAY',x:2620,y:160,w:380,h:1700,c:'#f87171'}
+  {label:'CLIENT',x:430,y:160,w:400,h:750,c:'#34d399'},
+  {label:'CONTRACT',x:100,y:1060,w:780,h:1050,c:'#c084fc'},
+  {label:'ATTENDANCE / SHOPL',x:1180,y:160,w:500,h:1100,c:'#22d3ee'},
+  {label:'SETTLEMENT',x:1700,y:380,w:520,h:1300,c:'#fbbf24'},
+  {label:'FINANCE / PREPAY',x:2620,y:160,w:380,h:2050,c:'#f87171'}
 ];
 
 var GROUPS = [
@@ -454,11 +446,6 @@ SECTIONS.forEach(function(s) {
   box.style.height = s.h + 'px';
   box.style.borderColor = s.c;
   box.style.backgroundColor = s.c + '18';
-  var lbl = document.createElement('span');
-  lbl.className = 'section-label';
-  lbl.style.color = s.c;
-  lbl.textContent = s.label;
-  box.appendChild(lbl);
   canvas.appendChild(box);
 });
 
@@ -559,16 +546,6 @@ TABLES.forEach(function(t) {
   });
 });
 
-// Group labels
-GROUPS.forEach(function(g) {
-  var el = document.createElement('div');
-  el.className = 'glabel';
-  el.style.left = g.x + 'px';
-  el.style.top = g.y + 'px';
-  el.style.color = g.c;
-  el.textContent = g.label;
-  canvas.appendChild(el);
-});
 
 function getEdge(from, to) {
   var fe = tblMap[from].el, te = tblMap[to].el;
@@ -666,9 +643,8 @@ document.addEventListener('mouseup', function() {
 
 wrap.addEventListener('wheel', function(e) {
   e.preventDefault();
-  // 스크롤(또는 Ctrl+스크롤) = 줌 인/아웃, Shift+스크롤 = 시각화 이동
-  var doZoom = !e.shiftKey;
-  if (doZoom && (e.ctrlKey || e.metaKey || Math.abs(e.deltaY) > Math.abs(e.deltaX))) {
+  // 스크롤 = 이동(pan), Ctrl+스크롤 = 줌 인/아웃
+  if (e.ctrlKey || e.metaKey) {
     var d = e.deltaY > 0 ? 0.9 : 1.1;
     var r = wrap.getBoundingClientRect();
     var mx = e.clientX - r.left, my = e.clientY - r.top;
