@@ -179,11 +179,12 @@ var TABLES = [
     {k:'',n:'bill_email_cc',t:'VARCHAR',d:'청구 담당자 이메일 참조'},
     {k:'',n:'invoice_email_1',t:'VARCHAR',d:'세금계산서 담당자 이메일 1'},
     {k:'',n:'invoice_email_2',t:'VARCHAR',d:'세금계산서 담당자 이메일 2'},
-    {k:'fk',n:'bill_id',t:'VARCHAR',d:'팀 청구 정보 참조'}
+    {k:'fk',n:'bill_id',t:'VARCHAR',d:'팀 청구 정보 참조'},
+    {k:'',n:'team_discount_policy',t:'VARCHAR',d:'N명 이상 M원 할인 제공, 플랜별 특정 금액 할인...'},
   ]},
   {id:'contract_master',name:'Contract_Master',theme:'contract',tag:'CONTRACT',x:350,y:1080,desc:'자동 생성 Full History Log. Register + Update(Amendment) 병합 결과.',fields:[
-    {k:'pk',n:'contract_id',t:'VARCHAR',d:'Amendment가 있을 경우 contract_update의 contract_id와 동일'},
-    {k:'pk',n:'parent_contract_id',t:'VARCHAR',d:'Amendment가 있을 경우 contract_update의 parent_contract_id와 동일'},
+    {k:'pk',n:'contract_id',t:'VARCHAR',d:'Orignial 계약 번호'},
+    {k:'pk',n:'parent_contract_id',t:'VARCHAR',d:'Amendment가 있을 경우 contract_mem_udt 또는 contract_cli_udt의 parent_contract_id와 동일'},
     {k:'fk',n:'member_id',t:'FK -> Member',d:'계층: member → contract'},
     {k:'fk',n:'team_id',t:'FK -> Team'},
     {k:'',n:'type',t:'TYPE', d:'Original : 첫계약(Register), Extension : 연장(Register), Amendment : 부속/변경(Update)'},
@@ -194,10 +195,13 @@ var TABLES = [
     {k:'',n:'position',t:'VARCHAR',d:'직무'},
     {k:'',n:'tier',t:'ENUM',d:'계약 플랜 (PICKDI, Pro, Specialist, Fresher, Intern)'},
     {k:'',n:'monthly_work_hours',t:'INT',d:'약정 근무 시간'},
-    {k:'',n:'service_fee',t:'DECIMAL',d:'서비스 이용료(월)'},
+    {k:'',n:'list_price',t:'INTEGER',d:'서비스 이용료(월)'},
+    {k:'',n:'discount_amount',t:'INTEGER',d:'서비스 이용료(월)'},
+    {k:'',n:'final_fee',t:'INTEGER',d:'서비스 이용료(월)'},
     {k:'',n:'trial_payment',t:'INTEGER',d:'수습 급여(월)'},
     {k:'',n:'official_payment',t:'INTEGER',d:'정규 급여(월)'},
-    {k:'',n:'termination_date',t:'DATE',d:'해지 일자 -> contract_termination의 termination_date와 동일'},
+    {k:'',n:'team_discount_policy',t:'VARCHAR',d:'N명 이상 M원 할인 제공, 플랜별 특정 금액 할인...'},
+    {k:'',n:'termination_date',t:'DATE',d:'해지 일자 -> contract_term의 termination_date와 동일'},
     {k:'',n:'termination_reason',t:'VARCHAR',d:'해지 사유 (Termination, Resignation, Expiration, Other)'}
   ]},
   {id:'contract_reg',name:'Contract_Register',theme:'contract',tag:'CONTRACT',x:120,y:1680,desc:'계약 등록 테이블. 첫 계약(Original), 연장(Extension) 등록. 계약 해지 후 재계약 시 gap이 있으면 여기 등록',fields:[
@@ -213,22 +217,30 @@ var TABLES = [
     {k:'',n:'monthly_work_hours',t:'INT',d:'약정 근무 시간'},
     {k:'',n:'trial_payment',t:'INTEGER',d:'수습 급여(월)'},
     {k:'',n:'official_payment',t:'INTEGER',d:'정규 급여(월)'},
-    {k:'',n:'service_fee',t:'INTEGER',d:'서비스 이용료(월)'},
+    {k:'',n:'list_price',t:'INTEGER',d:'서비스 이용료(월)'},
+    {k:'',n:'discount_amount',t:'INTEGER',d:'서비스 이용료(월)'},
+    {k:'',n:'final_fee',t:'INTEGER',d:'서비스 이용료(월)'},
     {k:'',n:'created_at',t:'DATETIME',d:'등록 일시'}
   ]},
-  {id:'contract_udt',name:'Contract_Update',theme:'contract',tag:'CONTRACT',x:200,y:1920,desc:'계약 변경(Amendment) 등록. parent_contract_id→Original, contract_id→변경 계약',fields:[
-    {k:'fk',n:'parent_contract_id',t:'FK -> Master',d:'변경 대상 Original 계약'},
-    {k:'pk',n:'contract_id',t:'PK -> Master',d:'변경 계약 번호'},
+  {id:'contract_mem_udt',name:'Contract_Member_Update',theme:'contract',tag:'CONTRACT',x:200,y:1920,desc:'멤버사이드 계약 변경(Amendment) 등록. parent_contract_id→Original, contract_id→변경 계약',fields:[
+    {k:'fk',n:'parent_contract_id',t:'FK -> Master',d:'[필수값]변경 대상 Original 계약'},
+    {k:'pk',n:'contract_id',t:'PK -> Master',d:'[필수값]변경 계약 번호'},
     {k:'',n:'monthly_work_hours',t:'INT',d:'약정 근무 시간'},
     {k:'',n:'trial_payment',t:'INTEGER',d:'수습 급여(월)'},
-    {k:'',n:'official_payment',t:'INTEGER',d:'정규 급여(월)'},
-    {k:'',n:'service_fee',t:'INTEGER',d:'서비스 이용료(월)'}
+    {k:'',n:'official_payment',t:'INTEGER',d:'정규 급여(월)'}
+  ]},
+  {id:'contract_cli_udt',name:'Contract_Client_Update',theme:'contract',tag:'CONTRACT',x:200,y:1920,desc:'고객사 사이드 계약 변경(Amendment) 등록. parent_contract_id→Original, contract_id→변경 계약',fields:[
+    {k:'fk',n:'parent_contract_id',t:'FK -> Master',d:'[필수값]변경 대상 Original 계약'},
+    {k:'pk',n:'contract_id',t:'PK -> Master',d:'[필수값]변경 계약 번호'},
+    {k:'',n:'list_price',t:'INTEGER',d:'서비스 이용료(월)'},
+    {k:'',n:'discount_amount',t:'INTEGER',d:'서비스 이용료(월)'},
+    {k:'',n:'final_fee',t:'INTEGER',d:'서비스 이용료(월)'}
   ]},
   {id:'contract_term',name:'Contract_termination',theme:'contract',tag:'CONTRACT',x:520,y:1680,desc:'해당 테이블에 속한 contract_id를 가진 모든 계약들은 해지 처리. (amend contract가 있을 경우 함께 해지 처리)',fields:[
     {k:'fk',n:'contract_id',t:'FK -> Master',d:'해지된 계약 번호'},
-    {k:'',n:'termination_reason',t:'VARCHAR',d:'해지 사유 (Termination, Resignation, Expiration, Other) -> master의 termination_reason와 동일'},
+    {k:'',n:'termination_reason',t:'VARCHAR',d:'해지 사유 (Termination, Resignation, Expiration, Other) -> contract_master의 termination_reason와 동일'},
     {k:'',n:'termination_detail',t:'TEXT',d:'해지 상세 사유'},
-    {k:'',n:'termination_date',t:'DATE',d:'해지 일자 -> master의 termination_date와 동일'},
+    {k:'',n:'termination_date',t:'DATE',d:'해지 일자 -> contract_master의 termination_date와 동일'},
     {k:'',n:'do_bill',t:'BOOLEAN',d:'고객사 청구 여부'},
     {k:'',n:'do_pay',t:'BOOLEAN',d:'급여 지급 여부'},
     {k:'',n:'Note',t:'TEXT',d:'메모'}
@@ -280,60 +292,59 @@ var TABLES = [
     {k:'',n:'contract_effective_date',t:'DATE',d:'계약 적용 시작일. 정산 조회: contract_effective <= 정산기준월 인 최근 행.\ntype이 Amendment가 아닐 경우 contract_start_date와 동일.'},
     {k:'',n:'trial_end_date',t:'DATE',d:'수습 종료일.'},
     {k:'',n:'contract_expire_date',t:'DATE',d:'계약 만료일.'},
-    {k:'',n:'termination_date',t:'DATE',d:'해지 일자 -> contract_termination의 termination_date와 동일'},
+    {k:'',n:'termination_date',t:'DATE',d:'해지 일자 -> contract_term의 termination_date와 동일'},
     {k:'',n:'position',t:'VARCHAR',d:'직무'},
     {k:'',n:'tier',t:'ENUM',d:'계약 플랜'},
+    {k:'',n:'monthly_work_days',t:'DECIMAL',d:'약정 근무 일수'},
     {k:'',n:'monthly_work_hours',t:'INT',d:'약정 근무 시간'},
-    {k:'',n:'service_fee',t:'DECIMAL',d:'서비스 이용료'},
+    {k:'',n:'list_price',t:'DECIMAL',d:'서비스 이용료 정가'},
+    {k:'',n:'discount_amount',t:'DECIMAL',d:'서비스 이용료 할인금액'},
+    {k:'',n:'final_fee',t:'DECIMAL',d:'실제 서비스 이용료'},
     {k:'',n:'trial_payment',t:'INTEGER',d:'수습 급여(월)'},
     {k:'',n:'official_payment',t:'INTEGER',d:'정규 급여(월)'},
     {k:'',n:'actual_working_hours_trial',t:'INTEGER',d:'수습기간 정산월 근무일수 (Shopl_Attendance 기준)'},
     {k:'',n:'actual_working_hours_official',t:'INTEGER',d:'정규기간 정산월 근무일수 (Shopl_Attendance 기준)'},
     {k:'',n:'ot_hours',t:'INTEGER',d:'overtime 테이블 OT 시간 contract_id 기준 합산'},
 
-    {k:'',n:'subtotal_fee',t:'INTEGER',d:'공급가액. (actual_work_fee + ot_fee + bonus_fee + reimbursable_fee) - post_discount_fee. 계산은 0의 자리 반올림'},
-    {k:'',n:'actual_work_fee',t:'INTEGER',d:'normal_work_fee+ot_fee. 근무시간*시급 (Shopl_Attendance 기준)'},
-    {k:'',n:'normal_work_fee',t:'INTEGER',d:'정가 기준 실제근무 시간 * 시급'},
-    {k:'',n:'pre_discount_fee',t:'INTEGER',d:'pre_ind + pre_team. normal_work_fee 초과 시 normal_work_fee와 동일'},
-    {k:'',n:'pre_ind_discount_fee',t:'INTEGER',d:'discount: apply_type=ind, apply_order=pre → discount_amt를 근무시간 일할 계산'},
-    {k:'',n:'pre_team_discount_fee',t:'INTEGER',d:'discount: apply_type=team, apply_order=pre → discount_amt를 근무시간 일할 계산'},
-    {k:'',n:'ot_fee',t:'INTEGER',d:'overtime 테이블 OT 금액 contract_id 기준'},
-    {k:'',n:'bonus_fee',t:'INTEGER',d:'bonus 테이블 금액 contract_id 기준'},
-    {k:'',n:'reimbursable_fee',t:'INTEGER',d:'reimburse 테이블 금액 contract_id 기준'},
-    {k:'',n:'post_discount_fee',t:'INTEGER',d:'post_ind + post_team. actual_work_fee 초과 시 actual_work_fee와 동일'},
-    {k:'',n:'post_ind_discount_fee',t:'INTEGER',d:'discount: ind+post → 근무시간 일할. actual_work_fee 초과 시 actual_work_fee'},
-    {k:'',n:'post_team_discount_fee',t:'INTEGER',d:'discount: team+post → 근무시간 일할. actual_work_fee 초과 시 actual_work_fee'},
-    {k:'',n:'pickdi_cover_fee',t:'INTEGER',d:'bonus/reimburse 테이블 pickdi 부담액 합산'},
-    {k:'',n:'tax',t:'INTEGER',d:'세금 (subtotal_fee * 0.1)'},
-    {k:'',n:'total_fee',t:'INTEGER',d:'총 금액 (subtotal_fee + tax)'},
-    {k:'',n:'deposit_refund',t:'INTEGER',d:'보증금 환불 여부 -> prep_log'},
-    {k:'',n:'prepayment_used',t:'INTEGER',d:'선금 사용 여부 -> prep_log'},
-    {k:'',n:'post_whole_discount_fee',t:'INTEGER',d:'전체 금액 할인'},
-    {k:'',n:'gross_payment_fee',t:'INTEGER',d:'총 급여 (payment_fee + ot_fee + reimbursable + client_cover + pickdi_payment + extra + 보험/원격 지원)'},
-    {k:'',n:'payment_fee',t:'INTEGER',d:'근무 급여 (trial_payment_fee + official_payment_fee)'},
-    {k:'',n:'trial_payment_fee',t:'INTEGER',d:'수습기간 정산월 근무일수 * trial_payment'},
-    {k:'',n:'official_payment_fee',t:'INTEGER',d:'정규기간 정산월 근무일수 * official_payment'},
-    {k:'',n:'ot_fee',t:'INTEGER',d:'overtime member_amount_vnd 합산'},
-    {k:'',n:'reimbursable_fee',t:'INTEGER',d:'reimburse member_amount_vnd 합산'},
-    {k:'',n:'client_cover_fee',t:'INTEGER',d:'bonus client_amount_krw 합산'},
-    {k:'',n:'pickdi_payment_fee',t:'INTEGER',d:'bonus pickdi_amount_krw 합산'},
-    {k:'',n:'extra_payment',t:'INTEGER',d:'초과근무 부담 금액 (예: 명절 근무 초과 부담)'},
-    {k:'',n:'health insurance_support',t:'INTEGER',d:'건강보험 보장 여부'},
-    {k:'',n:'health insurance_support_amount',t:'INTEGER',d:'건강보험 보장 금액'},
-    {k:'',n:'remote_support_amount',t:'INTEGER',d:'원격 근무 지원 금액'},
-    {k:'',n:'tax',t:'INTEGER',d:'세금'},
-    {k:'',n:'net_payment_fee',t:'INTEGER',d:'실 급여 (gross_payment_fee - tax)'},
+    {k:'',n:'fee_subtotal',t:'INTEGER',d:'공급가액. (fee_actual_service + fee_ot + fee_bonus + fee_reimbursable) - fee_post_discount_amount. 계산은 0의 자리 반올림'},
+    {k:'',n:'fee_actual_service',t:'INTEGER',d:'fee_list_price + fee_ot. 근무시간*시급 (Shopl_Attendance 기준)'},
+    {k:'',n:'fee_list_price',t:'INTEGER',d:'정가 기준 실제근무 시간 * 시급'},
+    {k:'',n:'fee_discount_amount',t:'INTEGER',d:'fee_list_price 초과 시 fee_list_price와 동일'},
+    {k:'',n:'fee_ot',t:'INTEGER',d:'overtime 테이블 OT 금액 contract_id 기준'},
+    {k:'',n:'fee_bonus',t:'INTEGER',d:'bonus 테이블 금액 contract_id 기준'},
+    {k:'',n:'fee_reimbursable',t:'INTEGER',d:'reimburse 테이블 금액 contract_id 기준'},
+    {k:'',n:'fee_pickdi_cover',t:'INTEGER',d:'bonus/reimburse 테이블 pickdi 부담액 합산'},
+    {k:'',n:'fee_tax',t:'INTEGER',d:'세금 (fee_subtotal * 0.1)'},
+    {k:'',n:'fee_total',t:'INTEGER',d:'총 금액 (fee_subtotal + fee_tax)'},
+    {k:'',n:'fee_deposit_refund',t:'INTEGER',d:'보증금 환불 여부 -> prep_log'},
+    {k:'',n:'fee_prepayment_used',t:'INTEGER',d:'선금 사용 여부 -> prep_log'},
+    {k:'',n:'fee_post_discount_amount',t:'INTEGER',d:'전체 금액 할인 -> discount 테이블에서 가져옴'},
+    {k:'',n:'payment_gross',t:'INTEGER',d:'총 급여 (payment_actual_service + payment_ot + payment_reimbursable + payment_client_cover + payment_pickdi_cover + payment_insurance_support_amount + payment_remote_support_amount)'},
+    {k:'',n:'payment_actual_service',t:'INTEGER',d:'근무 급여 (payment_trial + payment_official)'},
+    {k:'',n:'payment_trial',t:'INTEGER',d:'actual_working_hours_trial * trial_payment'},
+    {k:'',n:'payment_official',t:'INTEGER',d:'actual_working_hours_official * official_payment'},
+    {k:'',n:'payment_ot',t:'INTEGER',d:'overtime member_amount_vnd 합산'},
+    {k:'',n:'payment_reimbursable',t:'INTEGER',d:'reimburse member_amount_vnd 합산'},
+    {k:'',n:'payment_client_cover',t:'INTEGER',d:'bonus client_amount_krw 합산'},
+    {k:'',n:'payment_pickdi_cover',t:'INTEGER',d:'bonus pickdi_amount_krw 합산'},
+    {k:'',n:'payment_insurance_support_amount',t:'INTEGER',d:'건강보험 보장 금액'},
+    {k:'',n:'payment_remote_support_amount',t:'INTEGER',d:'원격 근무 지원 금액'},
+    {k:'',n:'payment_tax',t:'INTEGER',d:'세금'},
+    {k:'',n:'payment_net',t:'INTEGER',d:'실 급여 (payment_gross - payment_tax)'},
     {k:'fk',n:'bill_id',t:'FK -> Team',d:'팀 청구 정보 FK'}
   ]},
   {id:'overtime_log',name:'Overtime_Log',theme:'finance',tag:'FINANCE',x:2700,y:960,desc:'초과 근무 로그. overtime 테이블의 소스 데이터',fields:[
-    {k:'',n:'contract_id',t:'VARCHAR',d:'직접 작성. OT 날짜 기준 active contract로 contract 테이블들과 합침'},
+    {k:'',n:'contract_id',t:'VARCHAR',d:'직접 작성. OT 날짜 기준 active contract로 contract_master 등 계약 테이블들과 합침'},
     {k:'',n:'date',t:'DATE',d:'초과 근무 일자'},
+    {k:'',n:'overtime_requestor',t:'VARCHAR',d:'초과 근무 신청자 : client / member'},
+    {k:'',n:'overtime_surcharge',t:'DECIMAL',d:'초과 근무 할증 % (예 : 35% -> 35 기입)'},
     {k:'',n:'overtime_hours',t:'INTEGER',d:'초과 근무 시간'},
     {k:'',n:'overtime_payment_VND',t:'INTEGER',d:'초과 근무 지급 급여 (베트남동)'},
-    {k:'',n:'overtime_fee_KRW',t:'INTEGER',d:'초과 근무 고객사 부담 금액 (원화)'}
+    {k:'',n:'overtime_fee_KRW',t:'INTEGER',d:'초과 근무 고객사 부담 금액 (원화)'},
+    {k:'',n:'overtime_memo',t:'VARCHAR',d:'초과 근무 관련 메모'}
   ]},
   {id:'overtime',name:'Overtime',theme:'finance',tag:'FINANCE',x:2700,y:680,desc:'초과 근무 집계. overtime_log 기반. settlement 데이터로 사용',fields:[
-    {k:'',n:'contract_id',t:'VARCHAR',d:'직접 작성. OT 날짜 기준 active contract로 contract 테이블들과 합침'},
+    {k:'',n:'contract_id',t:'VARCHAR',d:'직접 작성. OT 날짜 기준 active contract로 contract_master 등 계약 테이블들과 합침'},
     {k:'',n:'month',t:'DATE',d:'월'},
     {k:'',n:'monthly_overtime_hours',t:'INTEGER',d:'월 초과 근무 시간'},
     {k:'',n:'monthly_overtime_payment_VND',t:'INTEGER',d:'월 초과 근무 지급 급여 (베트남동)'},
@@ -345,11 +356,12 @@ var TABLES = [
     {k:'',n:'date',t:'DATE',d:'발생 일자'},
     {k:'',n:'expense_amount_VND',t:'INTEGER',d:'실비 지급액 VND (Net)'},
     {k:'',n:'expense_amount_KRW',t:'INTEGER',d:'실비 청구액 KRW (Net+VAT)한 값을 원화로 환산'},
-    {k:'',n:'detail',t:'VARCHAR',d:'실비 내용'},
+    {k:'',n:'detail_EN',t:'VARCHAR',d:'실비 내용 영문 : 멤버의 Payroll에 작성됨'},
+    {k:'',n:'detail_KR',t:'VARCHAR',d:'실비 내용 국문 : 고객사 billing invoice에 작성됨'},
     {k:'',n:'repeat',t:'VARCHAR',d:'Monthly/Onetime'}
   ]},
   {id:'bonus',name:'Bonus',theme:'finance',tag:'FINANCE',x:2700,y:1520,desc:'보너스 정보. settlement 데이터로 사용',fields:[
-    {k:'',n:'contract_id',t:'VARCHAR',d:'직접 작성. OT 날짜 기준 active contract로 contract 테이블들과 합침'},
+    {k:'',n:'contract_id',t:'VARCHAR',d:'직접 작성. OT 날짜 기준 active contract로 contract_master 등 계약 테이블들과 합침'},
     {k:'',n:'month',t:'DATE',d:'월'},
     {k:'',n:'date',t:'DATE',d:'월'},
     {k:'',n:'cover_by',t:'VARCHAR',d:'PICKDI / Client'},
@@ -379,6 +391,7 @@ var TABLES = [
     {k:'fk',n:'team_id',t:'VARCHAR',d:'팀 고유 번호. 직접 작성 후 다른 데이터와 합침'},
     {k:'',n:'type',t:'VARCHAR',d:'유형 : prepayment(예치금), deposit(보증금)'},
     {k:'',n:'date',t:'DATE',d:'잔액 변동 일자. 보증금 상계 시 정산월 마지막 날로 작성'},
+    {k:'',n:'action',t:'VARCHAR',d:'add, deduct, refund'},
     {k:'',n:'amount',t:'INT',d:'잔액 변동 금액'},
     {k:'',n:'log_detail',t:'INT',d:'잔액 변동 상세 내역'},
   ]}
@@ -387,7 +400,8 @@ var TABLES = [
 var RELS = [
   {f:'member',t:'contract_reg',c:'#60a5fa'},
   {f:'contract_reg',t:'contract_master',c:'#c084fc'},
-  {f:'contract_udt',t:'contract_master',c:'#c084fc'},
+  {f:'contract_mem_udt',t:'contract_master',c:'#c084fc'},
+  {f:'contract_cli_udt',t:'contract_master',c:'#c084fc'},
   {f:'contract_term',t:'contract_master',c:'#c084fc'},
   {f:'company',t:'team',c:'#34d399'},
   {f:'team',t:'contract_master',c:'#34d399'},
@@ -759,6 +773,704 @@ function fetchCommentCounts() {
 }
 setTimeout(applyT, 80);
 setTimeout(fetchCommentCounts, 1500);
+</script>
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>PICKDI ERD</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:#0d0f14; color:#e2e8f0; font-family:'Courier New',monospace; overflow:hidden; }
+#header {
+  position:fixed; top:0; left:0; right:0; z-index:100;
+  background:rgba(13,15,20,0.95); border-bottom:1px solid #1e2535;
+  padding:10px 20px; display:flex; align-items:center; justify-content:space-between;
+}
+.logo { font-size:14px; font-weight:700; color:#64ffda; letter-spacing:3px; }
+.legend { display:flex; gap:16px; font-size:10px; color:#64748b; align-items:center; }
+.ld { display:flex; align-items:center; gap:5px; }
+.ldot { width:9px; height:9px; border-radius:50%; }
+#wrap { position:fixed; top:46px; left:0; right:0; bottom:0; overflow:hidden; cursor:grab; }
+#wrap.grabbing { cursor:grabbing; }
+#canvas { position:absolute; transform-origin:0 0; }
+svg#lines { position:absolute; top:0; left:0; pointer-events:none; overflow:visible; }
+.tbl {
+  position:absolute; background:#111827; border:1px solid #1e2535;
+  border-radius:10px; min-width:210px; box-shadow:0 4px 20px rgba(0,0,0,0.5);
+}
+.tbl:hover { border-color:#2d3748; }
+.tbl-head {
+  padding:9px 13px 8px; border-radius:9px 9px 0 0;
+  display:flex; align-items:center; gap:7px; cursor:move;
+}
+.tbl-nm { font-size:11px; font-weight:700; color:#f1f5f9; }
+.tbl-tag {
+  margin-left:auto; font-size:9px; padding:2px 5px;
+  border-radius:4px; font-weight:700; letter-spacing:.5px;
+}
+.tbl-div { height:1px; background:#1e2535; }
+.tbl-fields { padding:5px 0; }
+.frow {
+  padding:3px 13px; display:flex; align-items:center;
+  gap:7px; font-size:10px;
+}
+.frow:hover { background:#1a1f2e; }
+.fkey {
+  font-size:9px; font-weight:700; width:18px; text-align:center;
+  border-radius:3px; padding:1px 2px; flex-shrink:0;
+}
+.fkey.pk { background:#fbbf2422; color:#fbbf24; }
+.fkey.fk { background:#60a5fa22; color:#60a5fa; }
+.fkey.no { opacity:0; }
+.fnm { color:#cbd5e1; flex:1; font-size:10px; }
+.fnm.pk { color:#fbbf24; }
+.fnm.fk { color:#93c5fd; }
+.ftype { color:#475569; font-size:9px; }
+.theme-member .tbl-head { background:linear-gradient(135deg,#1a2744,#1e3a5f); }
+.theme-member .tbl-tag { background:#3b82f622; color:#60a5fa; }
+.theme-client .tbl-head { background:linear-gradient(135deg,#1a2e2a,#1a3a30); }
+.theme-client .tbl-tag { background:#10b98122; color:#34d399; }
+.theme-contract .tbl-head { background:linear-gradient(135deg,#2d1f3d,#3d2050); }
+.theme-contract .tbl-tag { background:#a855f722; color:#c084fc; }
+.theme-settle .tbl-head { background:linear-gradient(135deg,#2d2010,#3d2c10); }
+.theme-settle .tbl-tag { background:#f59e0b22; color:#fbbf24; }
+.theme-finance .tbl-head { background:linear-gradient(135deg,#2d1010,#3d1515); }
+.theme-finance .tbl-tag { background:#ef444422; color:#f87171; }
+.theme-attend .tbl-head { background:linear-gradient(135deg,#102020,#153030); }
+.theme-attend .tbl-tag { background:#06b6d422; color:#22d3ee; }
+.theme-prepay .tbl-head { background:linear-gradient(135deg,#3d2010,#4d2815); }
+.theme-prepay .tbl-tag { background:#ea580c22; color:#fb923c; }
+.glabel {
+  position:absolute; font-size:9px; font-weight:700;
+  letter-spacing:3px; opacity:.3; pointer-events:none;
+}
+.section-box {
+  position:absolute; border-radius:12px; pointer-events:none;
+  border:2px solid;
+  background:rgba(0,0,0,0.08);
+}
+.section-box .section-label {
+  position:absolute; top:-22px; left:0; font-size:10px; font-weight:700;
+  letter-spacing:2px; opacity:0.8;
+}
+#ctrls { position:fixed; bottom:16px; right:16px; z-index:100; display:flex; flex-direction:column; gap:6px; }
+.cbtn {
+  width:34px; height:34px; background:#1a1f2e; border:1px solid #2d3748;
+  border-radius:8px; color:#94a3b8; cursor:pointer; font-size:15px;
+  display:flex; align-items:center; justify-content:center;
+}
+.cbtn:hover { background:#232a3e; color:#64ffda; }
+.frow[data-desc] { cursor:help; }
+.erd-tooltip {
+  position:fixed; z-index:1000; max-width:320px; padding:10px 14px;
+  background:#1e293b; border:1px solid #334155; border-radius:8px;
+  font-size:11px; color:#e2e8f0; line-height:1.7; box-shadow:0 4px 12px rgba(0,0,0,0.4);
+  pointer-events:none; opacity:0; transition:opacity 0.15s;
+  white-space:pre-line;
+  word-break:keep-all;
+}
+.erd-tooltip.visible { opacity:1; }
+#comment-panel {
+  position:fixed; right:-420px; top:46px; bottom:0; width:400px; background:#111827;
+  border-left:1px solid #1e2535; z-index:99; transition:right 0.3s; overflow-y:auto;
+  padding:16px; box-shadow:-4px 0 20px rgba(0,0,0,0.4);
+}
+#comment-panel.open { right:0; }
+#comment-panel h3 { font-size:12px; color:#94a3b8; margin-bottom:12px; letter-spacing:1px; }
+.tbl-comment { margin-left:6px; opacity:0.6; cursor:pointer; font-size:11px; padding:1px 4px; }
+.tbl-comment:hover { opacity:1; color:#64ffda; }
+</style>
+</head>
+<body>
+<div id="header">
+  <div class="logo">PICKDI &middot; ERD</div>
+  <div class="legend">
+    <div class="ld"><div class="ldot" style="background:#60a5fa"></div>Member</div>
+    <div class="ld"><div class="ldot" style="background:#34d399"></div>Client</div>
+    <div class="ld"><div class="ldot" style="background:#c084fc"></div>Contract</div>
+    <div class="ld"><div class="ldot" style="background:#fbbf24"></div>Settlement</div>
+    <div class="ld"><div class="ldot" style="background:#f87171"></div>Finance</div>
+    <div class="ld"><div class="ldot" style="background:#22d3ee"></div>Attendance</div>
+    <div style="margin-left:10px;font-size:10px;">드래그/스크롤 이동 &middot; 핀치 줌 확대/축소</div>
+  </div>
+</div>
+<div id="wrap">
+  <div id="canvas">
+    <svg id="lines"></svg>
+  </div>
+</div>
+<div id="erd-tooltip" class="erd-tooltip"></div>
+<div id="ctrls">
+  <button class="cbtn" id="bplus">+</button>
+  <button class="cbtn" id="bminus">&minus;</button>
+  <button class="cbtn" id="breset">&#8635;</button>
+  <button class="cbtn" id="bcomment" title="코멘트">&#128172;</button>
+</div>
+<div id="comment-panel">
+  <h3 id="comment-panel-title">코멘트</h3>
+  <div id="utterances-container"></div>
+</div>
+<script>
+var TABLES = [
+  {id:'member',name:'Member',theme:'member',tag:'CORE',x:120,y:180,desc:'멤버(베트남 인력) 기본 정보',fields:[
+    {k:'pk',n:'member_id',t:'VARCHAR',d:'CCCD기반 hash화된 id (CCCD마다 고유함)'},
+    {k:'',n:'CCCD',t:'VARCHAR',d:'CCCD 번호'},
+    {k:'',n:'fullname',t:'VARCHAR',d:'이름'},
+    {k:'',n:'nickname',t:'VARCHAR',d:'영문 이름'},
+    {k:'',n:'gender',t:'VARCHAR',d:'성별'},
+    {k:'',n:'birthday',t:'DATE',d:'생년월일'},
+    {k:'',n:'address',t:'VARCHAR',d:'주소'},
+    {k:'',n:'email',t:'VARCHAR',d:'이메일'},
+    {k:'',n:'phone',t:'VARCHAR',d:'전화번호'},
+    {k:'',n:'emergency_phone',t:'VARCHAR',d:'비상 연락처'},
+    {k:'',n:'emergency_name',t:'VARCHAR',d:'비상 연락처 이름'},
+    {k:'',n:'account_info',t:'VARCHAR',d:'계좌 정보'},
+    {k:'',n:'account_bank_name',t:'VARCHAR',d:'은행 이름'},
+    {k:'',n:'account_bank_no',t:'VARCHAR',d:'은행 번호'},
+    {k:'',n:'taxcode',t:'VARCHAR',d:'소득세코드'}
+  ]},
+  {id:'company',name:'Company (Client)',theme:'client',tag:'CLIENT',x:450,y:180,desc:'고객사 회사 정보',fields:[
+    {k:'pk',n:'company_id',t:'VARCHAR',d:'회사 고유 번호'},
+    {k:'',n:'business_no',t:'VARCHAR',d:'사업자 번호'},
+    {k:'',n:'company_name',t:'VARCHAR',d:'회사 이름 (영문)'},
+    {k:'',n:'company_address',t:'VARCHAR',d:'회사 주소'},
+    {k:'',n:'company_rep_name',t:'VARCHAR',d:'회사 대표 이름'}
+  ]},
+  {id:'team',name:'Team (Unit)',theme:'client',tag:'CLIENT',x:450,y:480,desc:'고객사 내 팀/유닛 정보',fields:[
+    {k:'pk',n:'team_id',t:'VARCHAR',d:'팀 고유 번호'},
+    {k:'',n:'team_name',t:'VARCHAR',d:'팀 이름'},
+    {k:'fk',n:'company_id',t:'FK -> Company',d:'회사 FK'},
+    {k:'',n:'manager_name',t:'VARCHAR',d:'팀 담당자 이름'},
+    {k:'',n:'manager_position',t:'VARCHAR',d:'팀 담당자 직급'},
+    {k:'',n:'manager_email',t:'VARCHAR',d:'팀 담당자 이메일'},
+    {k:'',n:'manager_phone',t:'VARCHAR',d:'팀 담당자 전화번호'},
+    {k:'',n:'bill_name',t:'VARCHAR',d:'팀 청구 담당자 이름'},
+    {k:'',n:'bill_position',t:'VARCHAR',d:'청구 담당자 직급'},
+    {k:'',n:'bill_email_main',t:'VARCHAR',d:'청구 담당자 이메일 메인'},
+    {k:'',n:'bill_email_cc',t:'VARCHAR',d:'청구 담당자 이메일 참조'},
+    {k:'',n:'invoice_email_1',t:'VARCHAR',d:'세금계산서 담당자 이메일 1'},
+    {k:'',n:'invoice_email_2',t:'VARCHAR',d:'세금계산서 담당자 이메일 2'},
+    {k:'fk',n:'bill_id',t:'VARCHAR',d:'팀 청구 정보 참조'}
+  ]},
+  {id:'contract_master',name:'Contract_Master',theme:'contract',tag:'CONTRACT',x:350,y:1080,desc:'자동 생성 Full History Log. Register + Update(Amendment) 병합 결과.',fields:[
+    {k:'pk',n:'contract_id',t:'VARCHAR',d:'Amendment가 있을 경우 contract_update의 contract_id와 동일'},
+    {k:'pk',n:'parent_contract_id',t:'VARCHAR',d:'Amendment가 있을 경우 contract_update의 parent_contract_id와 동일'},
+    {k:'fk',n:'member_id',t:'FK -> Member',d:'계층: member → contract'},
+    {k:'fk',n:'team_id',t:'FK -> Team'},
+    {k:'',n:'type',t:'TYPE', d:'Original : 첫계약(Register), Extension : 연장(Register), Amendment : 부속/변경(Update)'},
+    {k:'',n:'contract_start_date',t:'DATE',d:'계약 시작일.'},
+    {k:'',n:'contract_effective_date',t:'DATE',d:'계약 적용 시작일. 정산 조회: contract_effective <= 정산기준월 인 최근 행.\ntype이 Amendment가 아닐 경우 contract_start_date와 동일.'},
+    {k:'',n:'trial_end_date',t:'DATE',d:'수습 종료일.'},
+    {k:'',n:'contract_expire_date',t:'DATE',d:'계약 만료일.'},
+    {k:'',n:'position',t:'VARCHAR',d:'직무'},
+    {k:'',n:'tier',t:'ENUM',d:'계약 플랜 (PICKDI, Pro, Specialist, Fresher, Intern)'},
+    {k:'',n:'monthly_work_days',t:'INT',d:'약정 근무 일수'},
+    {k:'',n:'monthly_work_hours',t:'INT',d:'약정 근무 시간'},
+    {k:'',n:'service_fee',t:'DECIMAL',d:'서비스 이용료(월)'},
+    {k:'',n:'trial_payment',t:'INTEGER',d:'수습 급여(월)'},
+    {k:'',n:'official_payment',t:'INTEGER',d:'정규 급여(월)'},
+    {k:'',n:'termination_date',t:'DATE',d:'해지 일자 -> contract_termination의 termination_date와 동일'},
+    {k:'',n:'termination_reason',t:'VARCHAR',d:'해지 사유 (Termination, Resignation, Expiration, Other)'}
+  ]},
+  {id:'contract_reg',name:'Contract_Register',theme:'contract',tag:'CONTRACT',x:120,y:1680,desc:'계약 등록 테이블. 첫 계약(Original), 연장(Extension) 등록. 계약 해지 후 재계약 시 gap이 있으면 여기 등록',fields:[
+    {k:'pk',n:'contract_id',t:'VARCHAR',d:'계약 고유 번호 (YY-포지션-순서)\n\n포지션별 번호:\n01 – PICKDI\n02 – Designer/Video Editor\n03 – CS\n04 – Marketing/Social Media\n05 – Market Research\n06 – IT'},
+    {k:'fk',n:'member_id',t:'FK -> Member',d:'멤버 FK'},
+    {k:'fk',n:'team_id',t:'FK -> Team',d:'팀 FK'},
+    {k:'',n:'contract_start_date',t:'DATE',d:'계약 시작일.'},
+    {k:'',n:'trial_end_date',t:'DATE',d:'수습 종료일.'},
+    {k:'',n:'contract_expire_date',t:'DATE',d:'계약 만료일.'},
+    {k:'',n:'position',t:'VARCHAR',d:'직무 : Designer/Video Editor, CS specialist, Marketer/Researcher, IT specialist \n유형화 전까지는 나인하이어의 공고 제목이나 JD상 포지션'},
+    {k:'',n:'tier',t:'VARCHAR',d:'계약 플랜 : PICKDI, Pro, Specialist, Fresher, Intern'},
+    {k:'',n:'contract_type',t:'VARCHAR',d:'fulltime, parttime, project'},
+    {k:'',n:'monthly_work_days',t:'INT',d:'약정 근무 일수'},
+    {k:'',n:'monthly_work_hours',t:'INT',d:'약정 근무 시간'},
+    {k:'',n:'trial_payment',t:'INTEGER',d:'수습 급여(월)'},
+    {k:'',n:'official_payment',t:'INTEGER',d:'정규 급여(월)'},
+    {k:'',n:'service_fee',t:'INTEGER',d:'서비스 이용료(월)'},
+    {k:'',n:'created_at',t:'DATETIME',d:'등록 일시'}
+  ]},
+  {id:'contract_udt',name:'Contract_Update',theme:'contract',tag:'CONTRACT',x:200,y:1920,desc:'계약 변경(Amendment) 등록. parent_contract_id→Original, contract_id→변경 계약',fields:[
+    {k:'fk',n:'parent_contract_id',t:'FK -> Master',d:'변경 대상 Original 계약'},
+    {k:'pk',n:'contract_id',t:'PK -> Master',d:'변경 계약 번호'},
+    {k:'',n:'monthly_work_hours',t:'INT',d:'약정 근무 시간'},
+    {k:'',n:'trial_payment',t:'INTEGER',d:'수습 급여(월)'},
+    {k:'',n:'official_payment',t:'INTEGER',d:'정규 급여(월)'},
+    {k:'',n:'service_fee',t:'INTEGER',d:'서비스 이용료(월)'}
+  ]},
+  {id:'contract_term',name:'Contract_termination',theme:'contract',tag:'CONTRACT',x:520,y:1680,desc:'해당 테이블에 속한 contract_id를 가진 모든 계약들은 해지 처리. (amend contract가 있을 경우 함께 해지 처리)',fields:[
+    {k:'fk',n:'contract_id',t:'FK -> Master',d:'해지된 계약 번호'},
+    {k:'',n:'termination_type',t:'VARCHAR',d:'해지 사유 (Termination, Resignation, Expiration, Other) -> master의 termination_reason와 동일'},
+    {k:'',n:'termination_reason_detail',t:'TEXT',d:'해지 상세 사유'},
+    {k:'',n:'termination_date',t:'DATE',d:'해지 일자 -> master의 termination_date와 동일'},
+    {k:'',n:'do_bill',t:'BOOLEAN',d:'고객사 청구 여부'},
+    {k:'',n:'do_pay',t:'BOOLEAN',d:'급여 지급 여부'},
+    {k:'',n:'Note',t:'TEXT',d:'메모'}
+  ]},
+  {id:'shopl_emp',name:'Shopl_Employees',theme:'attend',tag:'SHOPL',x:1200,y:180,desc:'Shopl 멤버 정보',fields:[
+    {k:'pk',n:'user_id',t:'VARCHAR',d:'Shopl 자동 발급 id'},
+    {k:'',n:'user_name',t:'VARCHAR',d:'Shopl에 등록된 이름'},
+    {k:'fk',n:'custom_id (team)',t:'FK -> Team',d:'Shopl에 기입할 수 있는 id 정보 <- contract_id (Original 계약)'},
+    {k:'fk',n:'group_id',t:'FK',d:'Shopl 자동 발급 그룹 id'},
+    {k:'',n:'is_resign',t:'BOOLEAN',d:'퇴사 여부'},
+    {k:'',n:'hire_dt',t:'DATE',d:'입사 일자'},
+    {k:'',n:'workplace_name',t:'VARCHAR',d:'근무지'}
+  ]},
+  {id:'shopl_sched',name:'Shopl_Schedule',theme:'attend',tag:'SHOPL',x:1200,y:480,desc:'Shopl 스케줄 정보',fields:[
+    {k:'fk',n:'user_id',t:'FK -> Shopl_Employees'},
+    {k:'fk',n:'custom_id',t:'FK -> Team'},
+    {k:'',n:'sch_date',t:'DATE',d:'스케줄 대상 일자'},
+    {k:'',n:'schedule_type',t:'ENUM',d:'스케줄 유형 : 근무/휴무 등'},
+    {k:'',n:'scheduled_work_start_time',t:'VARCHAR',d:'예정 근무 시작 시간'},
+    {k:'',n:'scheduled_work_end_time',t:'VARCHAR',d:'예정 근무 종료 시간'}
+  ]},
+  {id:'shopl_att',name:'Shopl_Attendance',theme:'attend',tag:'SHOPL',x:1200,y:780,desc:'Shopl 출석 정보',fields:[
+    {k:'fk',n:'user_id',t:'FK -> Shopl_Employees'},
+    {k:'fk',n:'custom_id',t:'FK -> Team'},
+    {k:'',n:'att_date',t:'DATE',d:'출석 일자'},
+    {k:'',n:'punch_in',t:'DATETIME',d:'실제 출근 시간'},
+    {k:'',n:'punch_out',t:'DATETIME',d:'실제 퇴근 시간'}
+  ]},
+  {id:'shopl_rep',name:'Shopl_Reports',theme:'attend',tag:'SHOPL',x:1200,y:1080,desc:'Shopl 근무 보고서 정보',fields:[
+    {k:'fk',n:'user_id',t:'FK -> Shopl_Employees'},
+    {k:'',n:'report_type',t:'VARCHAR',d:'보고서 유형 : 출근/점심휴식/복귀/퇴근 등'},
+    {k:'',n:'report_date',t:'DATE',d:'보고서 제출 일시'},
+    {k:'',n:'report_result',t:'VARCHAR',d:'보고서 제출 값 : 출근/점심휴식/복귀/퇴근 등'},
+    {k:'',n:'report_image_link',t:'VARCHAR',d:'보고서 이미지 링크'}
+  ]},
+  {id:'holidays',name:'Holidays',theme:'attend',tag:'REF',x:1550,y:200,desc:'한국과 베트남의 공휴일 정보',fields:[
+    {k:'pk',n:'date',t:'DATE',d:'일자'},
+    {k:'',n:'holiday_kr',t:'VARCHAR',d:'한국 공휴일 이름'},
+    {k:'',n:'holiday_vn',t:'VARCHAR',d:'베트남 공휴일 이름'}
+  ]},
+  {id:'settlement',name:'Settlement (정산시트)',theme:'settle',tag:'BILLING',x:1850,y:450,desc:'정산 정보 output 시트',fields:[
+    {k:'fk',n:'team_id',t:'FK -> Team'},
+    {k:'fk',n:'contract_id',t:'FK -> Contract_Master'},
+    {k:'fk',n:'member_id',t:'FK -> Member'},
+    {k:'',n:'billing_month',t:'DATE_RANGE',d:'정산 월 : 월별 정산 시 사용'},
+    {k:'',n:'billing_start_period',t:'DATE_RANGE',d:'정산 기간 시작일. contract_effective가 해당 월 이후면 마지막 날은 termination date'},
+    {k:'',n:'billing_end_period',t:'DATE_RANGE',d:'정산 기간 종료일. termination date가 있으면 정산 기간 마지막 날은 termination date'},
+    {k:'',n:'contract_start_date',t:'DATE',d:'계약 시작일.'},
+    {k:'',n:'contract_effective_date',t:'DATE',d:'계약 적용 시작일. 정산 조회: contract_effective <= 정산기준월 인 최근 행.\ntype이 Amendment가 아닐 경우 contract_start_date와 동일.'},
+    {k:'',n:'trial_end_date',t:'DATE',d:'수습 종료일.'},
+    {k:'',n:'contract_expire_date',t:'DATE',d:'계약 만료일.'},
+    {k:'',n:'termination_date',t:'DATE',d:'해지 일자 -> contract_termination의 termination_date와 동일'},
+    {k:'',n:'position',t:'VARCHAR',d:'직무'},
+    {k:'',n:'tier',t:'ENUM',d:'계약 플랜'},
+    {k:'',n:'monthly_work_hours',t:'INT',d:'약정 근무 시간'},
+    {k:'',n:'service_fee',t:'DECIMAL',d:'서비스 이용료'},
+    {k:'',n:'trial_payment',t:'INTEGER',d:'수습 급여(월)'},
+    {k:'',n:'official_payment',t:'INTEGER',d:'정규 급여(월)'},
+    {k:'',n:'actual_working_hours_trial',t:'INTEGER',d:'수습기간 정산월 근무일수 (Shopl_Attendance 기준)'},
+    {k:'',n:'actual_working_hours_official',t:'INTEGER',d:'정규기간 정산월 근무일수 (Shopl_Attendance 기준)'},
+    {k:'',n:'ot_hours',t:'INTEGER',d:'overtime 테이블 OT 시간 contract_id 기준 합산'},
+
+    {k:'',n:'subtotal_fee',t:'INTEGER',d:'공급가액. (actual_work_fee + ot_fee + bonus_fee + reimbursable_fee) - post_discount_fee. 계산은 0의 자리 반올림'},
+    {k:'',n:'actual_work_fee',t:'INTEGER',d:'normal_work_fee+ot_fee. 근무시간*시급 (Shopl_Attendance 기준)'},
+    {k:'',n:'normal_work_fee',t:'INTEGER',d:'정가 기준 실제근무 시간 * 시급'},
+    {k:'',n:'pre_discount_fee',t:'INTEGER',d:'pre_ind + pre_team. normal_work_fee 초과 시 normal_work_fee와 동일'},
+    {k:'',n:'pre_ind_discount_fee',t:'INTEGER',d:'discount: apply_type=ind, apply_order=pre → discount_amt를 근무시간 일할 계산'},
+    {k:'',n:'pre_team_discount_fee',t:'INTEGER',d:'discount: apply_type=team, apply_order=pre → discount_amt를 근무시간 일할 계산'},
+    {k:'',n:'ot_fee',t:'INTEGER',d:'overtime 테이블 OT 금액 contract_id 기준'},
+    {k:'',n:'bonus_fee',t:'INTEGER',d:'bonus 테이블 금액 contract_id 기준'},
+    {k:'',n:'reimbursable_fee',t:'INTEGER',d:'reimburse 테이블 금액 contract_id 기준'},
+    {k:'',n:'post_discount_fee',t:'INTEGER',d:'post_ind + post_team. actual_work_fee 초과 시 actual_work_fee와 동일'},
+    {k:'',n:'post_ind_discount_fee',t:'INTEGER',d:'discount: ind+post → 근무시간 일할. actual_work_fee 초과 시 actual_work_fee'},
+    {k:'',n:'post_team_discount_fee',t:'INTEGER',d:'discount: team+post → 근무시간 일할. actual_work_fee 초과 시 actual_work_fee'},
+    {k:'',n:'pickdi_cover_fee',t:'INTEGER',d:'bonus/reimburse 테이블 pickdi 부담액 합산'},
+    {k:'',n:'tax',t:'INTEGER',d:'세금 (subtotal_fee * 0.1)'},
+    {k:'',n:'total_fee',t:'INTEGER',d:'총 금액 (subtotal_fee + tax)'},
+    {k:'',n:'deposit_refund',t:'INTEGER',d:'보증금 환불 여부 -> prep_log'},
+    {k:'',n:'prepayment_used',t:'INTEGER',d:'선금 사용 여부 -> prep_log'},
+    {k:'',n:'post_whole_discount_fee',t:'INTEGER',d:'전체 금액 할인'},
+    {k:'',n:'gross_payment_fee',t:'INTEGER',d:'총 급여 (payment_fee + ot_fee + reimbursable + client_cover + pickdi_payment + extra + 보험/원격 지원)'},
+    {k:'',n:'payment_fee',t:'INTEGER',d:'근무 급여 (trial_payment_fee + official_payment_fee)'},
+    {k:'',n:'trial_payment_fee',t:'INTEGER',d:'수습기간 정산월 근무일수 * trial_payment'},
+    {k:'',n:'official_payment_fee',t:'INTEGER',d:'정규기간 정산월 근무일수 * official_payment'},
+    {k:'',n:'ot_fee',t:'INTEGER',d:'overtime member_amount_vnd 합산'},
+    {k:'',n:'reimbursable_fee',t:'INTEGER',d:'reimburse member_amount_vnd 합산'},
+    {k:'',n:'client_cover_fee',t:'INTEGER',d:'bonus client_amount_krw 합산'},
+    {k:'',n:'pickdi_payment_fee',t:'INTEGER',d:'bonus pickdi_amount_krw 합산'},
+    {k:'',n:'extra_payment',t:'INTEGER',d:'초과근무 부담 금액 (예: 명절 근무 초과 부담)'},
+    {k:'',n:'health insurance_support',t:'INTEGER',d:'건강보험 보장 여부'},
+    {k:'',n:'health insurance_support_amount',t:'INTEGER',d:'건강보험 보장 금액'},
+    {k:'',n:'remote_support_amount',t:'INTEGER',d:'원격 근무 지원 금액'},
+    {k:'',n:'tax',t:'INTEGER',d:'세금'},
+    {k:'',n:'net_payment_fee',t:'INTEGER',d:'실 급여 (gross_payment_fee - tax)'},
+    {k:'fk',n:'bill_id',t:'FK -> Team',d:'팀 청구 정보 FK'}
+  ]},
+  {id:'overtime_log',name:'Overtime_Log',theme:'finance',tag:'FINANCE',x:2700,y:960,desc:'초과 근무 로그. overtime 테이블의 소스 데이터',fields:[
+    {k:'',n:'contract_id',t:'VARCHAR',d:'직접 작성. OT 날짜 기준 active contract로 contract 테이블들과 합침'},
+    {k:'',n:'date',t:'DATE',d:'초과 근무 일자'},
+    {k:'',n:'overtime_hours',t:'INTEGER',d:'초과 근무 시간'},
+    {k:'',n:'overtime_payment_VND',t:'INTEGER',d:'초과 근무 지급 급여 (베트남동)'},
+    {k:'',n:'overtime_fee_KRW',t:'INTEGER',d:'초과 근무 고객사 부담 금액 (원화)'}
+  ]},
+  {id:'overtime',name:'Overtime',theme:'finance',tag:'FINANCE',x:2700,y:680,desc:'초과 근무 집계. overtime_log 기반. settlement 데이터로 사용',fields:[
+    {k:'',n:'contract_id',t:'VARCHAR',d:'직접 작성. OT 날짜 기준 active contract로 contract 테이블들과 합침'},
+    {k:'',n:'month',t:'DATE',d:'월'},
+    {k:'',n:'monthly_overtime_hours',t:'INTEGER',d:'월 초과 근무 시간'},
+    {k:'',n:'monthly_overtime_payment_VND',t:'INTEGER',d:'월 초과 근무 지급 급여 (베트남동)'},
+    {k:'',n:'monthly_overtime_fee_KRW',t:'INTEGER',d:'월 초과 근무 고객사 부담 금액 (원화)'}
+  ]},
+  {id:'reimburse',name:'Reimburse',theme:'finance',tag:'FINANCE',x:2700,y:1240,desc:'실비 정보. settlement 데이터로 사용',fields:[
+    {k:'',n:'contract_id',t:'VARCHAR',d:'직접 작성.'},
+    {k:'',n:'month',t:'DATE',d:'적용 월'},
+    {k:'',n:'date',t:'DATE',d:'발생 일자'},
+    {k:'',n:'expense_amount_VND',t:'INTEGER',d:'실비 지급액 VND (Net)'},
+    {k:'',n:'expense_amount_KRW',t:'INTEGER',d:'실비 청구액 KRW (Net+VAT)한 값을 원화로 환산'},
+    {k:'',n:'detail',t:'VARCHAR',d:'실비 내용'},
+    {k:'',n:'repeat',t:'VARCHAR',d:'Monthly/Onetime'}
+  ]},
+  {id:'bonus',name:'Bonus',theme:'finance',tag:'FINANCE',x:2700,y:1520,desc:'보너스 정보. settlement 데이터로 사용',fields:[
+    {k:'',n:'contract_id',t:'VARCHAR',d:'직접 작성. OT 날짜 기준 active contract로 contract 테이블들과 합침'},
+    {k:'',n:'month',t:'DATE',d:'월'},
+    {k:'',n:'date',t:'DATE',d:'월'},
+    {k:'',n:'cover_by',t:'VARCHAR',d:'PICKDI / Client'},
+    {k:'',n:'bonus_type',t:'VARCHAR',d:'referral, monthly, loyalty, ...'},
+    {k:'',n:'bonus_detail',t:'VARCHAR',d:'보너스 상세 내역'},
+    {k:'',n:'bonus_amount_VND',t:'INTEGER',d:'보너스 지급액 (Net)'},
+    {k:'',n:'bonus_amount_KRW',t:'INTEGER',d:'보너스 청구액 (Net+VAT)한 값을 원화로 환산. cover_by가 PICKDI일 경우 청구서에는 반영 X'}
+  ]},
+  {id:'discount',name:'Discount',theme:'finance',tag:'FINANCE',x:2700,y:1800,desc:'할인 정보. apply_type/apply_order에 따라 정산 시 선적용(pre) 또는 후적용(post)',fields:[
+    {k:'',n:'apply_type',t:'ENUM',d:'할인 적용 유형 : team(공통), ind(개별), whole(전체)'},
+    {k:'',n:'apply_order',t:'ENUM',d:'할인 적용 순서 : pre(선적용), post(후적용)'},
+    {k:'fk',n:'team_id',t:'FK -> Team',d:'apply_type이 team/whole일 때 사용'},
+    {k:'',n:'plan',t:'VARCHAR',d:'apply_type이 team일 때 사용 (플랜명)'},
+    {k:'fk',n:'contract_id',t:'FK -> Contract_Master',d:'apply_type이 ind일 때 사용'},
+    {k:'',n:'discount_amt',t:'DECIMAL',d:'할인 금액 (원화)'},
+    {k:'',n:'discount_detail',t:'DECIMAL',d:'할인 상세 내역'}
+  ]},
+  {id:'prep_bal',name:'Prepayment_Balance',theme:'prepay',tag:'PREPAY',x:2700,y:180,desc:'선금/보증금 잔액. prep_log 데이터 기반 계산',fields:[
+    {k:'fk',n:'company_id',t:'FK -> Company',d:'회사 고유 번호'},
+    {k:'fk',n:'team_id',t:'FK -> Team',d:'팀 고유 번호'},
+    {k:'',n:'type',t:'VARCHAR',d:'유형 : prepayment(예치금), deposit(보증금)'},
+    {k:'',n:'balance',t:'INT',d:'잔액 (마이너스일 경우 반환 필요)'},
+    {k:'',n:'note',t:'TEXT',d:'메모'}
+  ]},
+  {id:'prep_log',name:'Prepayment_Log',theme:'prepay',tag:'PREPAY',x:2700,y:420,desc:'선금/보증금 변동 로그. 구글시트 작성. prep_bal의 소스 데이터',fields:[
+    {k:'fk',n:'company_id',t:'VARCHAR',d:'회사 고유 번호. 직접 작성 후 다른 데이터와 합침'},
+    {k:'fk',n:'team_id',t:'VARCHAR',d:'팀 고유 번호. 직접 작성 후 다른 데이터와 합침'},
+    {k:'',n:'type',t:'VARCHAR',d:'유형 : prepayment(예치금), deposit(보증금)'},
+    {k:'',n:'date',t:'DATE',d:'잔액 변동 일자. 보증금 상계처리의 경우 정산 대상 월의 마지막 날짜로.'},
+    {k:'',n:'apply_month',t:'DATE',d:'정산 적용 월'},
+    {k:'',n:'amount',t:'INT',d:'잔액 변동 금액'},
+    {k:'',n:'log_detail',t:'VARCHAR',d:'잔액 변동 상세 내역'},
+  ]}
+];
+
+var RELS = [
+  {f:'member',t:'contract_reg',c:'#60a5fa'},
+  {f:'contract_reg',t:'contract_master',c:'#c084fc'},
+  {f:'contract_udt',t:'contract_master',c:'#c084fc'},
+  {f:'contract_term',t:'contract_master',c:'#c084fc'},
+  {f:'company',t:'team',c:'#34d399'},
+  {f:'team',t:'contract_master',c:'#34d399'},
+  {f:'contract_reg',t:'shopl_emp',c:'#a78bfa'},
+  {f:'shopl_emp',t:'shopl_sched',c:'#22d3ee'},
+  {f:'shopl_emp',t:'shopl_att',c:'#22d3ee'},
+  {f:'shopl_emp',t:'shopl_rep',c:'#22d3ee'},
+  {f:'shopl_att',t:'settlement',c:'#22d3ee'},
+  {f:'contract_master',t:'settlement',c:'#c084fc'},
+  {f:'prep_log',t:'prep_bal',c:'#f87171'},
+  {f:'prep_log',t:'settlement',c:'#f87171'},
+  {f:'discount',t:'settlement',c:'#f87171'},
+  {f:'overtime_log',t:'overtime',c:'#f87171'},
+  {f:'overtime',t:'settlement',c:'#f87171'},
+  {f:'reimburse',t:'settlement',c:'#f87171'},
+  {f:'bonus',t:'settlement',c:'#f87171'}
+];
+
+var SECTIONS = [
+  {label:'MEMBER',x:100,y:160,w:320,h:400,c:'#60a5fa'},
+  {label:'CLIENT',x:430,y:160,w:400,h:400,c:'#34d399'},
+  {label:'CONTRACT',x:100,y:1060,w:550,h:950,c:'#c084fc'},
+  {label:'ATTENDANCE / SHOPL',x:1180,y:160,w:500,h:1000,c:'#22d3ee'},
+  {label:'SETTLEMENT',x:1700,y:380,w:400,h:900,c:'#fbbf24'},
+  {label:'FINANCE / PREPAY',x:2620,y:160,w:380,h:1700,c:'#f87171'}
+];
+
+var GROUPS = [
+  {label:'MEMBER',x:120,y:140,c:'#60a5fa'},
+  {label:'CLIENT',x:450,y:140,c:'#34d399'},
+  {label:'CONTRACT (member→contract)',x:350,y:1040,c:'#c084fc'},
+  {label:'ATTENDANCE / SHOPL',x:1200,y:140,c:'#22d3ee'},
+  {label:'SETTLEMENT',x:1850,y:380,c:'#fbbf24'},
+  {label:'FINANCE / PREPAY',x:2700,y:140,c:'#f87171'}
+];
+
+var canvas = document.getElementById('canvas');
+var svgEl = document.getElementById('lines');
+var wrap = document.getElementById('wrap');
+var tblMap = {};
+var scale = 0.35, panX = 60, panY = 60;
+
+// Build section boxes (rendered first, behind tables)
+SECTIONS.forEach(function(s) {
+  var box = document.createElement('div');
+  box.className = 'section-box';
+  box.style.left = s.x + 'px';
+  box.style.top = s.y + 'px';
+  box.style.width = s.w + 'px';
+  box.style.height = s.h + 'px';
+  box.style.borderColor = s.c;
+  box.style.backgroundColor = s.c + '18';
+  var lbl = document.createElement('span');
+  lbl.className = 'section-label';
+  lbl.style.color = s.c;
+  lbl.textContent = s.label;
+  box.appendChild(lbl);
+  canvas.appendChild(box);
+});
+
+// Build tables
+TABLES.forEach(function(t) {
+  var div = document.createElement('div');
+  div.className = 'tbl theme-' + t.theme;
+  div.style.left = t.x + 'px';
+  div.style.top = t.y + 'px';
+
+  var head = document.createElement('div');
+  head.className = 'tbl-head';
+  head.innerHTML = '<span class="tbl-nm">' + t.name + '</span><span class="tbl-comment" data-table="' + t.id + '" title="이 테이블에 코멘트">&#128172;</span><span class="tbl-tag">' + t.tag + '</span>';
+  if (t.desc) {
+    head.style.cursor = 'help';
+    head.addEventListener('mouseenter', function(ev) {
+      var tip = document.getElementById('erd-tooltip');
+      tip.textContent = t.desc;
+      tip.classList.add('visible');
+      tip.style.left = (ev.clientX + 12) + 'px';
+      tip.style.top = (ev.clientY + 12) + 'px';
+    });
+    head.addEventListener('mouseleave', function() {
+      document.getElementById('erd-tooltip').classList.remove('visible');
+    });
+    head.addEventListener('mousemove', function(ev) {
+      var tip = document.getElementById('erd-tooltip');
+      tip.style.left = (ev.clientX + 12) + 'px';
+      tip.style.top = (ev.clientY + 12) + 'px';
+    });
+  }
+  div.appendChild(head);
+
+  var divLine = document.createElement('div');
+  divLine.className = 'tbl-div';
+  div.appendChild(divLine);
+
+  var fields = document.createElement('div');
+  fields.className = 'tbl-fields';
+  t.fields.forEach(function(f) {
+    var row = document.createElement('div');
+    row.className = 'frow';
+    if (f.d) row.setAttribute('data-desc', f.d);
+    var kc = f.k === 'pk' ? 'pk' : f.k === 'fk' ? 'fk' : 'no';
+    var nc = f.k === 'pk' ? 'pk' : f.k === 'fk' ? 'fk' : '';
+    row.innerHTML = '<span class="fkey ' + kc + '">' + (f.k ? f.k.toUpperCase() : '&nbsp;') + '</span>'
+      + '<span class="fnm ' + nc + '">' + f.n + '</span>'
+      + '<span class="ftype">' + f.t + '</span>';
+    if (f.d) {
+      row.addEventListener('mouseenter', function(ev) {
+        var tip = document.getElementById('erd-tooltip');
+        tip.textContent = f.d;
+        tip.classList.add('visible');
+        tip.style.left = (ev.clientX + 12) + 'px';
+        tip.style.top = (ev.clientY + 12) + 'px';
+      });
+      row.addEventListener('mouseleave', function() {
+        document.getElementById('erd-tooltip').classList.remove('visible');
+      });
+      row.addEventListener('mousemove', function(ev) {
+        var tip = document.getElementById('erd-tooltip');
+        tip.style.left = (ev.clientX + 12) + 'px';
+        tip.style.top = (ev.clientY + 12) + 'px';
+      });
+    }
+    fields.appendChild(row);
+  });
+  div.appendChild(fields);
+  canvas.appendChild(div);
+  tblMap[t.id] = {el: div, data: t};
+
+  head.querySelector('.tbl-comment').addEventListener('click', function(e) {
+    e.stopPropagation();
+    location.hash = e.target.getAttribute('data-table');
+    document.getElementById('comment-panel').classList.add('open');
+    document.getElementById('comment-panel-title').textContent = t.name + ' 코멘트';
+    loadUtterances();
+  });
+  var ox = 0, oy = 0, dragging = false;
+  head.addEventListener('mousedown', function(e) {
+    e.stopPropagation();
+    dragging = true;
+    ox = (e.clientX - panX) / scale - t.x;
+    oy = (e.clientY - panY) / scale - t.y;
+    wrap.classList.add('grabbing');
+  });
+  document.addEventListener('mousemove', function(e) {
+    if (!dragging) return;
+    t.x = (e.clientX - panX) / scale - ox;
+    t.y = (e.clientY - panY) / scale - oy;
+    div.style.left = t.x + 'px';
+    div.style.top = t.y + 'px';
+    drawLines();
+  });
+  document.addEventListener('mouseup', function() {
+    if (dragging) { dragging = false; wrap.classList.remove('grabbing'); }
+  });
+});
+
+// Group labels
+GROUPS.forEach(function(g) {
+  var el = document.createElement('div');
+  el.className = 'glabel';
+  el.style.left = g.x + 'px';
+  el.style.top = g.y + 'px';
+  el.style.color = g.c;
+  el.textContent = g.label;
+  canvas.appendChild(el);
+});
+
+function getEdge(from, to) {
+  var fe = tblMap[from].el, te = tblMap[to].el;
+  var fd = tblMap[from].data, td = tblMap[to].data;
+  var fw = fe.offsetWidth, fh = fe.offsetHeight;
+  var tw = te.offsetWidth, th = te.offsetHeight;
+  var fcx = fd.x + fw/2, fcy = fd.y + fh/2;
+  var tcx = td.x + tw/2, tcy = td.y + th/2;
+  var dx = tcx - fcx, dy = tcy - fcy;
+  var ex, ey;
+  if (Math.abs(dx) * (fh/2) > Math.abs(dy) * (fw/2)) {
+    ex = fd.x + (dx > 0 ? fw : 0);
+    ey = fcy + (dy / (Math.abs(dx) || 1)) * (fw/2) * (dx > 0 ? 1 : -1);
+  } else {
+    ey = fd.y + (dy > 0 ? fh : 0);
+    ex = fcx + (dx / (Math.abs(dy) || 1)) * (fh/2) * (dy > 0 ? 1 : -1);
+  }
+  return {x: ex, y: ey};
+}
+
+function drawLines() {
+  svgEl.innerHTML = '';
+  var defs = document.createElementNS('http://www.w3.org/2000/svg','defs');
+  var usedColors = {};
+  RELS.forEach(function(r) { usedColors[r.c] = true; });
+  Object.keys(usedColors).forEach(function(c) {
+    var m = document.createElementNS('http://www.w3.org/2000/svg','marker');
+    var sid = 'arr' + c.replace('#','');
+    m.setAttribute('id', sid);
+    m.setAttribute('markerWidth','12');
+    m.setAttribute('markerHeight','12');
+    m.setAttribute('refX','10');
+    m.setAttribute('refY','4');
+    m.setAttribute('orient','auto');
+    var p = document.createElementNS('http://www.w3.org/2000/svg','path');
+    p.setAttribute('d','M0,0 L0,8 L10,4 z');
+    p.setAttribute('fill', c);
+    p.setAttribute('opacity','0.85');
+    m.appendChild(p);
+    defs.appendChild(m);
+    var mDown = document.createElementNS('http://www.w3.org/2000/svg','marker');
+    mDown.setAttribute('id', sid + 'Down');
+    mDown.setAttribute('markerWidth','16');
+    mDown.setAttribute('markerHeight','16');
+    mDown.setAttribute('refX','12');
+    mDown.setAttribute('refY','5');
+    mDown.setAttribute('orient','auto');
+    var pDown = document.createElementNS('http://www.w3.org/2000/svg','path');
+    pDown.setAttribute('d','M0,0 L0,10 L14,5 z');
+    pDown.setAttribute('fill', c);
+    pDown.setAttribute('opacity','1');
+    mDown.appendChild(pDown);
+    defs.appendChild(mDown);
+  });
+  svgEl.appendChild(defs);
+
+  RELS.forEach(function(r) {
+    if (!tblMap[r.f] || !tblMap[r.t]) return;
+    var fd = tblMap[r.f].data, td = tblMap[r.t].data;
+    var fcy = fd.y + tblMap[r.f].el.offsetHeight / 2;
+    var tcy = td.y + tblMap[r.t].el.offsetHeight / 2;
+    var isDown = tcy > fcy + 50;
+    var p1 = getEdge(r.f, r.t);
+    var p2 = getEdge(r.t, r.f);
+    var path = document.createElementNS('http://www.w3.org/2000/svg','path');
+    var cp1x = p1.x + (p2.x - p1.x) * 0.4;
+    var cp2x = p1.x + (p2.x - p1.x) * 0.6;
+    path.setAttribute('d','M'+p1.x+','+p1.y+' C'+cp1x+','+p1.y+' '+cp2x+','+p2.y+' '+p2.x+','+p2.y);
+    path.setAttribute('fill','none');
+    path.setAttribute('stroke', r.c);
+    path.setAttribute('stroke-width', isDown ? '3.5' : '2.5');
+    path.setAttribute('opacity', isDown ? '0.9' : '0.7');
+    path.setAttribute('marker-end','url(#arr'+r.c.replace('#','')+(isDown?'Down':'')+')');
+    svgEl.appendChild(path);
+  });
+}
+
+// Pan
+var panning = false, lx = 0, ly = 0;
+wrap.addEventListener('mousedown', function(e) {
+  if (e.target === wrap || e.target === canvas || e.target === svgEl) {
+    panning = true; lx = e.clientX; ly = e.clientY;
+    wrap.classList.add('grabbing');
+  }
+});
+document.addEventListener('mousemove', function(e) {
+  if (!panning) return;
+  panX += e.clientX - lx; panY += e.clientY - ly;
+  lx = e.clientX; ly = e.clientY;
+  applyT();
+});
+document.addEventListener('mouseup', function() {
+  if (panning) { panning = false; wrap.classList.remove('grabbing'); }
+});
+
+wrap.addEventListener('wheel', function(e) {
+  e.preventDefault();
+  // 터치패드 핀치 줌(ctrlKey) = 줌 인/아웃, 일반 스크롤 = 시각화 이동
+  if (e.ctrlKey || e.metaKey) {
+    var d = e.deltaY > 0 ? 0.9 : 1.1;
+    var r = wrap.getBoundingClientRect();
+    var mx = e.clientX - r.left, my = e.clientY - r.top;
+    panX = mx - (mx - panX) * d;
+    panY = my - (my - panY) * d;
+    scale = Math.max(0.15, Math.min(2.5, scale * d));
+  } else {
+    panX -= e.deltaX;
+    panY -= e.deltaY;
+  }
+  applyT();
+}, {passive: false});
+
+function applyT() {
+  canvas.style.transform = 'translate('+panX+'px,'+panY+'px) scale('+scale+')';
+  drawLines();
+}
+
+document.getElementById('bplus').onclick = function() { scale = Math.min(2.5, scale * 1.15); applyT(); };
+document.getElementById('bminus').onclick = function() { scale = Math.max(0.15, scale / 1.15); applyT(); };
+document.getElementById('breset').onclick = function() { scale = 0.35; panX = 60; panY = 60; applyT(); };
+document.getElementById('bcomment').onclick = function() {
+  location.hash = '';
+  document.getElementById('comment-panel-title').textContent = '전체 코멘트';
+  document.getElementById('comment-panel').classList.toggle('open');
+  loadUtterances();
+};
+function loadUtterances() {
+  var c = document.getElementById('utterances-container');
+  c.innerHTML = '';
+  var s = document.createElement('script');
+  s.src = 'https://utteranc.es/client.js';
+  s.setAttribute('repo', 'king80139/PICKDI_ERD');
+  s.setAttribute('issue-term', 'url');
+  s.setAttribute('theme', 'github-dark');
+  s.setAttribute('crossorigin', 'anonymous');
+  s.async = true;
+  c.appendChild(s);
+}
+
+setTimeout(applyT, 80);
 </script>
 </body>
 </html>
