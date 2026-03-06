@@ -307,21 +307,21 @@ var TABLES = [
     {k:'',n:'net_payment_fee',t:'INTEGER',d:'실 급여 (gross_payment_fee - tax)'},
     {k:'fk',n:'bill_id',t:'FK -> Team',d:'팀 청구 정보 FK'}
   ]},
-  {id:'overtime_log',name:'Overtime_Log',theme:'finance',tag:'FINANCE',x:2480,y:1000,desc:'초과 근무 로그. overtime 테이블의 소스 데이터',fields:[
+  {id:'overtime_log',name:'Overtime_Log',theme:'finance',tag:'FINANCE',x:2480,y:800,desc:'초과 근무 로그. overtime 테이블의 소스 데이터',fields:[
     {k:'',n:'contract_id',t:'VARCHAR',d:'직접 작성. OT 날짜 기준 active contract로 contract 테이블들과 합침'},
     {k:'',n:'date',t:'DATE',d:'초과 근무 일자'},
     {k:'',n:'overtime_hours',t:'INTEGER',d:'초과 근무 시간'},
     {k:'',n:'overtime_payment_VND',t:'INTEGER',d:'초과 근무 지급 급여 (베트남동)'},
     {k:'',n:'overtime_fee_KRW',t:'INTEGER',d:'초과 근무 고객사 부담 금액 (원화)'}
   ]},
-  {id:'overtime',name:'Overtime',theme:'finance',tag:'FINANCE',x:2480,y:1240,desc:'초과 근무 집계. overtime_log 기반. settlement 데이터로 사용',fields:[
+  {id:'overtime',name:'Overtime',theme:'finance',tag:'FINANCE',x:2480,y:1040,desc:'초과 근무 집계. overtime_log 기반. settlement 데이터로 사용',fields:[
     {k:'',n:'contract_id',t:'VARCHAR',d:'직접 작성. OT 날짜 기준 active contract로 contract 테이블들과 합침'},
     {k:'',n:'month',t:'DATE',d:'월'},
     {k:'',n:'monthly_overtime_hours',t:'INTEGER',d:'월 초과 근무 시간'},
     {k:'',n:'monthly_overtime_payment_VND',t:'INTEGER',d:'월 초과 근무 지급 급여 (베트남동)'},
     {k:'',n:'monthly_overtime_fee_KRW',t:'INTEGER',d:'월 초과 근무 고객사 부담 금액 (원화)'}
   ]},
-  {id:'reimburse',name:'Reimburse',theme:'finance',tag:'FINANCE',x:2480,y:1480,desc:'실비 정보. settlement 데이터로 사용',fields:[
+  {id:'reimburse',name:'Reimburse',theme:'finance',tag:'FINANCE',x:2780,y:180,desc:'실비 정보. settlement 데이터로 사용',fields:[
     {k:'',n:'contract_id',t:'VARCHAR',d:'직접 작성.'},
     {k:'',n:'month',t:'DATE',d:'적용 월'},
     {k:'',n:'date',t:'DATE',d:'발생 일자'},
@@ -330,7 +330,7 @@ var TABLES = [
     {k:'',n:'detail',t:'VARCHAR',d:'실비 내용'},
     {k:'',n:'repeat',t:'VARCHAR',d:'Monthly/Onetime'}
   ]},
-  {id:'bonus',name:'Bonus',theme:'finance',tag:'FINANCE',x:2480,y:1720,desc:'보너스 정보. settlement 데이터로 사용',fields:[
+  {id:'bonus',name:'Bonus',theme:'finance',tag:'FINANCE',x:2780,y:520,desc:'보너스 정보. settlement 데이터로 사용',fields:[
     {k:'',n:'contract_id',t:'VARCHAR',d:'직접 작성. OT 날짜 기준 active contract로 contract 테이블들과 합침'},
     {k:'',n:'month',t:'DATE',d:'월'},
     {k:'',n:'date',t:'DATE',d:'월'},
@@ -339,7 +339,7 @@ var TABLES = [
     {k:'',n:'bonus_amount_VND',t:'INTEGER',d:'보너스 지급액 (Net)'},
     {k:'',n:'bonus_amount_KRW',t:'INTEGER',d:'보너스 청구액 (Net+VAT)한 값을 원화로 환산. cover_by가 PICKDI일 경우 청구서에는 반영 X'}
   ]},
-  {id:'discount',name:'Discount',theme:'finance',tag:'FINANCE',x:2480,y:1560,desc:'할인 정보. apply_type/apply_order에 따라 정산 시 선적용(pre) 또는 후적용(post)',fields:[
+  {id:'discount',name:'Discount',theme:'finance',tag:'FINANCE',x:2780,y:860,desc:'할인 정보. apply_type/apply_order에 따라 정산 시 선적용(pre) 또는 후적용(post)',fields:[
     {k:'',n:'apply_type',t:'ENUM',d:'할인 적용 유형 : team(공통), ind(개별), whole(전체)'},
     {k:'',n:'apply_order',t:'ENUM',d:'할인 적용 순서 : pre(선적용), post(후적용)'},
     {k:'fk',n:'team_id',t:'FK -> Team',d:'apply_type이 team/whole일 때 사용'},
@@ -354,7 +354,7 @@ var TABLES = [
     {k:'',n:'balance',t:'INT',d:'잔액 (마이너스일 경우 반환 필요)'},
     {k:'',n:'note',t:'TEXT',d:'메모'}
   ]},
-  {id:'prep_log',name:'Prepayment_Log',theme:'prepay',tag:'PREPAY',x:2480,y:720,desc:'선금/보증금 변동 로그. 구글시트 작성. prep_bal의 소스 데이터',fields:[
+  {id:'prep_log',name:'Prepayment_Log',theme:'prepay',tag:'PREPAY',x:2480,y:480,desc:'선금/보증금 변동 로그. 구글시트 작성. prep_bal의 소스 데이터',fields:[
     {k:'fk',n:'company_id',t:'VARCHAR',d:'회사 고유 번호. 직접 작성 후 다른 데이터와 합침'},
     {k:'fk',n:'team_id',t:'VARCHAR',d:'팀 고유 번호. 직접 작성 후 다른 데이터와 합침'},
     {k:'',n:'type',t:'VARCHAR',d:'유형 : prepayment(예치금), deposit(보증금)'},
@@ -388,11 +388,11 @@ var RELS = [
 
 var SECTIONS = [
   {label:'MEMBER',x:100,y:160,w:320,h:400,c:'#60a5fa'},
-  {label:'CLIENT',x:580,y:160,w:360,h:480,c:'#34d399'},
-  {label:'CONTRACT',x:100,y:1080,w:1050,h:780,c:'#c084fc'},
+  {label:'CLIENT',x:580,y:160,w:360,h:750,c:'#34d399'},
+  {label:'CONTRACT',x:100,y:1080,w:1050,h:1100,c:'#c084fc'},
   {label:'ATTENDANCE / SHOPL',x:1280,y:160,w:520,h:1320,c:'#22d3ee'},
   {label:'SETTLEMENT',x:1980,y:160,w:380,h:1700,c:'#fbbf24'},
-  {label:'FINANCE / PREPAY',x:2460,y:160,w:360,h:1700,c:'#f87171'}
+  {label:'FINANCE / PREPAY',x:2460,y:160,w:640,h:1700,c:'#f87171'}
 ];
 
 var GROUPS = [
