@@ -123,7 +123,7 @@ svg#lines { position:absolute; top:0; left:0; pointer-events:none; overflow:visi
 </div>
 <script>
 var TABLES = [
-  {id:'member',name:'Member',theme:'member',tag:'CORE',x:120,y:180,fields:[
+  {id:'member',name:'Member',theme:'member',tag:'CORE',x:120,y:180,desc:'멤버(베트남 인력) 기본 정보',fields:[
     {k:'pk',n:'member_id',t:'VARCHAR',d:'CCCD기반 hash화된 id (CCCD마다 고유함)'},
     {k:'',n:'CCCD',t:'VARCHAR',d:'CCCD 번호'},
     {k:'',n:'fullname',t:'VARCHAR',d:'이름'},
@@ -140,17 +140,17 @@ var TABLES = [
     {k:'',n:'account_bank_no',t:'VARCHAR',d:'은행 번호'},
     {k:'',n:'taxcode',t:'VARCHAR',d:'소득세코드'}
   ]},
-  {id:'company',name:'Company (Client)',theme:'client',tag:'CLIENT',x:600,y:180,fields:[
+  {id:'company',name:'Company (Client)',theme:'client',tag:'CLIENT',x:600,y:180,desc:'고객사 회사 정보',fields:[
     {k:'pk',n:'company_id',t:'VARCHAR',d:'회사 고유 번호'},
     {k:'',n:'business_no',t:'VARCHAR',d:'사업자 번호'},
     {k:'',n:'company_name',t:'VARCHAR',d:'회사 이름 (영문)'},
     {k:'',n:'company_address',t:'VARCHAR',d:'회사 주소'},
     {k:'',n:'company_rep_name',t:'VARCHAR',d:'회사 대표 이름'}
   ]},
-  {id:'team',name:'Team (Unit)',theme:'client',tag:'CLIENT',x:600,y:460,fields:[
+  {id:'team',name:'Team (Unit)',theme:'client',tag:'CLIENT',x:600,y:460,desc:'고객사 내 팀/유닛 정보',fields:[
     {k:'pk',n:'team_id',t:'VARCHAR',d:'팀 고유 번호'},
     {k:'',n:'team_name',t:'VARCHAR',d:'팀 이름'},
-    {k:'fk',n:'company_id',t:'FK -> Company'},
+    {k:'fk',n:'company_id',t:'FK -> Company',d:'회사 FK'},
     {k:'',n:'manager_name',t:'VARCHAR',d:'팀 담당자 이름'},
     {k:'',n:'manager_position',t:'VARCHAR',d:'팀 담당자 직급'},
     {k:'',n:'manager_email',t:'VARCHAR',d:'팀 담당자 이메일'},
@@ -163,9 +163,9 @@ var TABLES = [
     {k:'',n:'invoice_email_2',t:'VARCHAR',d:'세금계산서 담당자 이메일 2'},
     {k:'fk',n:'bill_id',t:'VARCHAR',d:'팀 청구 정보 참조'}
   ]},
-  {id:'contract_master',name:'Contract_Master',theme:'contract',tag:'CONTRACT',x:120,y:1100,fields:[
-    {k:'pk',n:'contract_id',t:'VARCHAR'}, // amend/extension이 있을 경우 contract_update의 contract_id와 동일
-    {k:'pk',n:'parent_contract_id',t:'VARCHAR'}, // amend/extension이 있을 경우 contract_update의 해당 contract_id의 parent_contract_id와 동일
+  {id:'contract_master',name:'Contract_Master',theme:'contract',tag:'CONTRACT',x:120,y:1100,desc:'자동 생성 Full History Log. Register + Update 병합 결과.',fields:[
+    {k:'pk',n:'contract_id',t:'VARCHAR',d:'amend/extension이 있을 경우 contract_update의 contract_id와 동일'},
+    {k:'pk',n:'parent_contract_id',t:'VARCHAR',d:'amend/extension이 있을 경우 contract_update의 해당 contract_id의 parent_contract_id와 동일'},
     {k:'fk',n:'member_id',t:'FK -> Member',d:'계층: member → contract'},
     {k:'fk',n:'team_id',t:'FK -> Team'},
     {k:'',n:'type',t:'TYPE', d:'Original : 첫계약, Extension : 연장, Amendment : 부속/변경'},
@@ -173,197 +173,193 @@ var TABLES = [
     {k:'',n:'contract_effective_date',t:'DATE',d:'계약 적용 시작일. 정산 조회: contract_effective <= 정산기준월 인 최근 행.\ntype이 Amendment가 아닐 경우 contract_start_date와 동일.'},
     {k:'',n:'trial_end_date',t:'DATE',d:'수습 종료일.'},
     {k:'',n:'contract_expire_date',t:'DATE',d:'계약 만료일.'},
-    {k:'',n:'position',t:'VARCHAR'},
-    {k:'',n:'tier',t:'ENUM'},
-    {k:'',n:'monthly_work_hours',t:'INT'},
-    {k:'',n:'service_fee',t:'DECIMAL'},
-    {k:'',n:'trial_payment',t:'INTEGER'}, // 수습 급여(월)
-    {k:'',n:'official_payment',t:'INTEGER'}, // 정규 급여(월)
-    {k:'',n:'termination_date',t:'DATE'}, // 해지 일자 -> contract_termination의 termination_date와 동일
-    {k:'',n:'termination_reason',t:'VARCHAR'}
+    {k:'',n:'position',t:'VARCHAR',d:'직무'},
+    {k:'',n:'tier',t:'ENUM',d:'계약 플랜 (PICKDI, Pro, Specialist, Fresher, Intern)'},
+    {k:'',n:'monthly_work_hours',t:'INT',d:'약정 근무 시간'},
+    {k:'',n:'service_fee',t:'DECIMAL',d:'서비스 이용료(월)'},
+    {k:'',n:'trial_payment',t:'INTEGER',d:'수습 급여(월)'},
+    {k:'',n:'official_payment',t:'INTEGER',d:'정규 급여(월)'},
+    {k:'',n:'termination_date',t:'DATE',d:'해지 일자 -> contract_termination의 termination_date와 동일'},
+    {k:'',n:'termination_reason',t:'VARCHAR',d:'해지 사유 (Termination, Resignation, Expiration, Other)'}
   ]},
-  {id:'contract_reg',name:'Contract_Register',theme:'contract',tag:'CONTRACT',x:120,y:1720,fields:[ // 계약 등록 테이블 -> 한 개인이 한 고객사와 첫 계약을 맺거나, 계약 해지 후 동일 고객사와 계약을 맺을 때에 gap이 있었다면 register에 등록
+  {id:'contract_reg',name:'Contract_Register',theme:'contract',tag:'CONTRACT',x:120,y:1720,desc:'계약 등록 테이블. 한 개인이 한 고객사와 첫 계약을 맺거나, 계약 해지 후 동일 고객사와 계약을 맺을 때 gap이 있었다면 register에 등록',fields:[
     {k:'pk',n:'contract_id',t:'VARCHAR',d:'계약 고유 번호 (YY-포지션-순서)\n\n포지션별 번호:\n01 – PICKDI\n02 – Designer/Video Editor\n03 – CS\n04 – Marketing/Social Media\n05 – Market Research\n06 – IT'},
-    {k:'fk',n:'member_id',t:'FK -> Member'},
-    {k:'fk',n:'team_id',t:'FK -> Team'},
+    {k:'fk',n:'member_id',t:'FK -> Member',d:'멤버 FK'},
+    {k:'fk',n:'team_id',t:'FK -> Team',d:'팀 FK'},
     {k:'',n:'contract_start_date',t:'DATE',d:'계약 시작일.'},
     {k:'',n:'trial_end_date',t:'DATE',d:'수습 종료일.'},
     {k:'',n:'contract_expire_date',t:'DATE',d:'계약 만료일.'},
-    {k:'',n:'position',t:'VARCHAR'}, // 직무 : Designer/Video Editor, CS specialist, Marketer/Researcher, IT specialist
-    {k:'',n:'tier',t:'VARCHAR'}, // 계약 플랜 : PICKDI, Pro, Specialist, Fresher, Intern
-    {k:'',n:'contract_type',t:'VARCHAR'}, // fulltime, parttime, shortterm
-    {k:'',n:'monthly_work_hours',t:'INT'}, // 약정 근무 시간
-    {k:'',n:'trial_payment',t:'INTEGER'}, // 수습 급여(월)
-    {k:'',n:'official_payment',t:'INTEGER'}, // 정규 급여(월)
-    {k:'',n:'service_fee',t:'INTEGER'}, // 서비스 이용료(월)
-    {k:'',n:'created_at',t:'DATETIME'}, // 등록 일시
+    {k:'',n:'position',t:'VARCHAR',d:'직무 : Designer/Video Editor, CS specialist, Marketer/Researcher, IT specialist'},
+    {k:'',n:'tier',t:'VARCHAR',d:'계약 플랜 : PICKDI, Pro, Specialist, Fresher, Intern'},
+    {k:'',n:'contract_type',t:'VARCHAR',d:'fulltime, parttime, shortterm'},
+    {k:'',n:'monthly_work_hours',t:'INT',d:'약정 근무 시간'},
+    {k:'',n:'trial_payment',t:'INTEGER',d:'수습 급여(월)'},
+    {k:'',n:'official_payment',t:'INTEGER',d:'정규 급여(월)'},
+    {k:'',n:'service_fee',t:'INTEGER',d:'서비스 이용료(월)'},
+    {k:'',n:'created_at',t:'DATETIME',d:'등록 일시'}
   ]},
-  {id:'contract_udt',name:'Contract_Update',theme:'contract',tag:'CONTRACT',x:600,y:1720,fields:[
+  {id:'contract_udt',name:'Contract_Update',theme:'contract',tag:'CONTRACT',x:600,y:1720,desc:'계약 변경(Amendment)/연장(Extension) 등록. parent_contract_id→Original, contract_id→변경/연장 계약',fields:[
     {k:'fk',n:'parent_contract_id',t:'FK -> Master',d:'[필수값]변경 대상 계약 Original 계약. Amendment/Extension 시에만 사용'},
     {k:'pk',n:'contract_id',t:'PK -> Master',d:'[필수값]변경 계약 번호. Amendment 시에만 사용\n'},
     {k:'',n:'type',t:'VARCHAR',d:'Amendment, Extension'},
     {k:'',n:'contract_effective',t:'DATE',d:'[필수값]Amendment/Extension 적용 시작일.'},
     {k:'',n:'trial_end_date',t:'DATE',d:'수습 종료일.'},
     {k:'',n:'contract_expire_date',t:'DATE',d:'계약 만료일.'},
-    {k:'',n:'position',t:'VARCHAR'}, // 직무 : Designer/Video Editor, CS specialist, Marketer/Researcher, IT specialist
-    {k:'',n:'tier',t:'VARCHAR'}, // 계약 플랜 : PICKDI, Pro, Specialist, Fresher, Intern
-    {k:'',n:'contract_type',t:'VARCHAR'}, // fulltime, parttime, shortterm
-    {k:'',n:'monthly_work_hours',t:'INT'}, // 약정 근무 시간
-    {k:'',n:'trial_payment',t:'INTEGER'}, // 수습 급여(월)
-    {k:'',n:'official_payment',t:'INTEGER'}, // 정규 급여(월)
-    {k:'',n:'service_fee',t:'INTEGER'}, // 서비스 이용료(월)
+    {k:'',n:'position',t:'VARCHAR',d:'직무 : Designer/Video Editor, CS specialist, Marketer/Researcher, IT specialist'},
+    {k:'',n:'tier',t:'VARCHAR',d:'계약 플랜 : PICKDI, Pro, Specialist, Fresher, Intern'},
+    {k:'',n:'contract_type',t:'VARCHAR',d:'fulltime, parttime, shortterm'},
+    {k:'',n:'monthly_work_hours',t:'INT',d:'약정 근무 시간'},
+    {k:'',n:'trial_payment',t:'INTEGER',d:'수습 급여(월)'},
+    {k:'',n:'official_payment',t:'INTEGER',d:'정규 급여(월)'},
+    {k:'',n:'service_fee',t:'INTEGER',d:'서비스 이용료(월)'}
   ]},
-  {id:'contract_term',name:'Contract_termination',theme:'contract',tag:'CONTRACT',x:1000,y:1720,fields:[ // 해당 테이블에 속한 contract_id를 가진 모든 계약들은 해지 처리가 됨 (contract_id에 amend contract가 있을 경우, amend contract도 해지 처리가 됨)
-    {k:'fk',n:'contract_id',t:'FK -> Master'}, // 해지된 계약 번호
-    {k:'',n:'termination_reason',t:'VARCHAR'}, // 해지 사유 (Termination, Resignation, Expiration, Other) -> master의 termination_reason와 동일
-    {k:'',n:'termination_detail',t:'TEXT'}, // 해지 상세 사유
+  {id:'contract_term',name:'Contract_termination',theme:'contract',tag:'CONTRACT',x:1000,y:1720,desc:'해당 테이블에 속한 contract_id를 가진 모든 계약들은 해지 처리. (amend contract가 있을 경우 함께 해지 처리)',fields:[
+    {k:'fk',n:'contract_id',t:'FK -> Master',d:'해지된 계약 번호'},
+    {k:'',n:'termination_reason',t:'VARCHAR',d:'해지 사유 (Termination, Resignation, Expiration, Other) -> master의 termination_reason와 동일'},
+    {k:'',n:'termination_detail',t:'TEXT',d:'해지 상세 사유'},
     {k:'',n:'termination_date',t:'DATE',d:'해지 일자 -> master의 termination_date와 동일'},
     {k:'',n:'do_bill',t:'BOOLEAN',d:'고객사 청구 여부'},
     {k:'',n:'do_pay',t:'BOOLEAN',d:'급여 지급 여부'},
     {k:'',n:'Note',t:'TEXT',d:'메모'}
   ]},
-  {id:'shopl_emp',name:'Shopl_Employees',theme:'attend',tag:'SHOPL',x:1300,y:180,fields:[ // Shopl 멤버 정보
-    {k:'pk',n:'user_id',t:'VARCHAR'}, // Shopl 자동 발급 id
-    {k:'',n:'user_name',t:'VARCHAR'}, // Shopl에 등록된 이름
-    {k:'fk',n:'custom_id (team)',t:'FK -> Team'}, // Shopl에 기입할 수 있는 id 정보 <- contract_id (Original 계약) 
-    {k:'fk',n:'group_id',t:'FK'}, // Shopl 자동 발급 그룹 id
-    {k:'',n:'is_resign',t:'BOOLEAN'}, // 퇴사 여부
-    {k:'',n:'hire_dt',t:'DATE'}, // 입사 일자
-    {k:'',n:'workplace_name',t:'VARCHAR'}, // 근무지 
+  {id:'shopl_emp',name:'Shopl_Employees',theme:'attend',tag:'SHOPL',x:1300,y:180,desc:'Shopl 멤버 정보',fields:[
+    {k:'pk',n:'user_id',t:'VARCHAR',d:'Shopl 자동 발급 id'},
+    {k:'',n:'user_name',t:'VARCHAR',d:'Shopl에 등록된 이름'},
+    {k:'fk',n:'custom_id (team)',t:'FK -> Team',d:'Shopl에 기입할 수 있는 id 정보 <- contract_id (Original 계약)'},
+    {k:'fk',n:'group_id',t:'FK',d:'Shopl 자동 발급 그룹 id'},
+    {k:'',n:'is_resign',t:'BOOLEAN',d:'퇴사 여부'},
+    {k:'',n:'hire_dt',t:'DATE',d:'입사 일자'},
+    {k:'',n:'workplace_name',t:'VARCHAR',d:'근무지'}
   ]},
-  {id:'shopl_sched',name:'Shopl_Schedule',theme:'attend',tag:'SHOPL',x:1300,y:560,fields:[ // Shopl 스케쥴 정보
+  {id:'shopl_sched',name:'Shopl_Schedule',theme:'attend',tag:'SHOPL',x:1300,y:560,desc:'Shopl 스케줄 정보',fields:[
     {k:'fk',n:'user_id',t:'FK -> Shopl_Employees'},
     {k:'fk',n:'custom_id',t:'FK -> Team'},
-    {k:'',n:'sch_date',t:'DATE'}, // 스케쥴 대상 일자
-    {k:'',n:'schedule_type',t:'ENUM'}, // 스케쥴 유형 : 근무/휴무 등
-    {k:'',n:'scheduled_work_start_time',t:'VARCHAR'}, // 예정 근무 시작 시간
-    {k:'',n:'scheduled_work_end_time',t:'VARCHAR'}, // 예정 근무 종료 시간
+    {k:'',n:'sch_date',t:'DATE',d:'스케줄 대상 일자'},
+    {k:'',n:'schedule_type',t:'ENUM',d:'스케줄 유형 : 근무/휴무 등'},
+    {k:'',n:'scheduled_work_start_time',t:'VARCHAR',d:'예정 근무 시작 시간'},
+    {k:'',n:'scheduled_work_end_time',t:'VARCHAR',d:'예정 근무 종료 시간'}
   ]},
-  {id:'shopl_att',name:'Shopl_Attendance',theme:'attend',tag:'SHOPL',x:1300,y:940,fields:[ // Shopl 출석 정보
+  {id:'shopl_att',name:'Shopl_Attendance',theme:'attend',tag:'SHOPL',x:1300,y:940,desc:'Shopl 출석 정보',fields:[
     {k:'fk',n:'user_id',t:'FK -> Shopl_Employees'},
     {k:'fk',n:'custom_id',t:'FK -> Team'},
-    {k:'',n:'att_date',t:'DATE'}, // 출석 일자
-    {k:'',n:'punch_in',t:'DATETIME'}, // 실제 출근 시간
-    {k:'',n:'punch_out',t:'DATETIME'}, // 실제 퇴근 시간
+    {k:'',n:'att_date',t:'DATE',d:'출석 일자'},
+    {k:'',n:'punch_in',t:'DATETIME',d:'실제 출근 시간'},
+    {k:'',n:'punch_out',t:'DATETIME',d:'실제 퇴근 시간'}
   ]},
-  {id:'shopl_rep',name:'Shopl_Reports',theme:'attend',tag:'SHOPL',x:1300,y:1320,fields:[ // Shopl근무 보고서 정보
+  {id:'shopl_rep',name:'Shopl_Reports',theme:'attend',tag:'SHOPL',x:1300,y:1320,desc:'Shopl 근무 보고서 정보',fields:[
     {k:'fk',n:'user_id',t:'FK -> Shopl_Employees'},
-    {k:'',n:'report_type',t:'VARCHAR'}, // 보고서 유형 : 출근/점심휴식/복귀/퇴근 등
-    {k:'',n:'report_date',t:'DATE'}, // 보고서 제출 일시
-    {k:'',n:'report_result',t:'VARCHAR'}, // 보고서 제출 값 : 출근/점심휴식/복귀/퇴근 등
-    {k:'',n:'report_iamge_link',t:'DATETIME'} // 보고서 이미지 링크
+    {k:'',n:'report_type',t:'VARCHAR',d:'보고서 유형 : 출근/점심휴식/복귀/퇴근 등'},
+    {k:'',n:'report_date',t:'DATE',d:'보고서 제출 일시'},
+    {k:'',n:'report_result',t:'VARCHAR',d:'보고서 제출 값 : 출근/점심휴식/복귀/퇴근 등'},
+    {k:'',n:'report_iamge_link',t:'VARCHAR',d:'보고서 이미지 링크'}
   ]},
-  {id:'holidays',name:'Holidays',theme:'attend',tag:'REF',x:1680,y:180,fields:[ // 한국과 베트남의 공휴일 정보
-    {k:'pk',n:'date',t:'DATE'}, // 일자
-    {k:'',n:'holiday_kr',t:'VARCHAR'}, // 한국 공휴일 이름
-    {k:'',n:'holiday_vn',t:'VARCHAR'}, // 베트남 공휴일 이름
+  {id:'holidays',name:'Holidays',theme:'attend',tag:'REF',x:1680,y:180,desc:'한국과 베트남의 공휴일 정보',fields:[
+    {k:'pk',n:'date',t:'DATE',d:'일자'},
+    {k:'',n:'holiday_kr',t:'VARCHAR',d:'한국 공휴일 이름'},
+    {k:'',n:'holiday_vn',t:'VARCHAR',d:'베트남 공휴일 이름'}
   ]},
-  {id:'settlement',name:'Settlement (정산시트)',theme:'settle',tag:'BILLING',x:2000,y:180,fields:[ // 정산 정보 output 시트
+  {id:'settlement',name:'Settlement (정산시트)',theme:'settle',tag:'BILLING',x:2000,y:180,desc:'정산 정보 output 시트',fields:[
     {k:'fk',n:'team_id',t:'FK -> Team'},
     {k:'fk',n:'contract_id',t:'FK -> Contract_Master'},
     {k:'fk',n:'member_id',t:'FK -> Member'},
-    {k:'',n:'billing_month',t:'DATE_RANGE'}, // 정산 월 : 월별 정산 시 사용
-    {k:'',n:'billing_start_period',t:'DATE_RANGE'}, // 정산 기간 시작일 : 월별 정산 시 사용 (contract_id기준 start_date나 contract_effective_date가 해당 월 이후라면 있다면 정산 기간의 마지막 날짜는 termination date임)
-    {k:'',n:'billing_end_period',t:'DATE_RANGE'}, // 정산 기간 종료일 : 월별 정산 시 사용 (contract_id기준 정산 월에 해당하는 기간, 만일 termination date가 있다면 정산 기간의 마지막 날짜는 termination date임)
+    {k:'',n:'billing_month',t:'DATE_RANGE',d:'정산 월 : 월별 정산 시 사용'},
+    {k:'',n:'billing_start_period',t:'DATE_RANGE',d:'정산 기간 시작일. contract_effective가 해당 월 이후면 마지막 날은 termination date'},
+    {k:'',n:'billing_end_period',t:'DATE_RANGE',d:'정산 기간 종료일. termination date가 있으면 정산 기간 마지막 날은 termination date'},
     {k:'',n:'contract_start_date',t:'DATE',d:'계약 시작일.'},
     {k:'',n:'contract_effective_date',t:'DATE',d:'계약 적용 시작일. 정산 조회: contract_effective <= 정산기준월 인 최근 행.\ntype이 Amendment가 아닐 경우 contract_start_date와 동일.'},
     {k:'',n:'trial_end_date',t:'DATE',d:'수습 종료일.'},
     {k:'',n:'contract_expire_date',t:'DATE',d:'계약 만료일.'},
-    {k:'',n:'termination_date',t:'DATE'}, // 해지 일자 -> contract_termination의 termination_date와 동일
-    {k:'',n:'position',t:'VARCHAR'},
-    {k:'',n:'tier',t:'ENUM'},
-    {k:'',n:'monthly_work_hours',t:'INT'},
-    {k:'',n:'service_fee',t:'DECIMAL'},
-    {k:'',n:'trial_payment',t:'INTEGER'}, // 수습 급여(월)
-    {k:'',n:'official_payment',t:'INTEGER'}, // 정규 급여(월)
-    // 근태 정보
-    {k:'',n:'actual_working_hours_trial',t:'INTEGER'}, // 수습기간 (contract_start_date ~ trial_end_date) 에 해당하는 정산월 중의 근무일수(Shopl_Attendance 테이블에서 계산)
-    {k:'',n:'actual_working_hours_official',t:'INTEGER'}, // 정규기간 (trial_end_date+1 ~ contract_expire_date) 에 해당하는 정산 월 중의 근무일수(Shopl_Attendance 테이블에서 계산)
-    {k:'',n:'ot_hours',t:'INTEGER'}, // expense 테이블에서 OT 시간을 contract_id기준 합산한 것.
+    {k:'',n:'termination_date',t:'DATE',d:'해지 일자 -> contract_termination의 termination_date와 동일'},
+    {k:'',n:'position',t:'VARCHAR',d:'직무'},
+    {k:'',n:'tier',t:'ENUM',d:'계약 플랜'},
+    {k:'',n:'monthly_work_hours',t:'INT',d:'약정 근무 시간'},
+    {k:'',n:'service_fee',t:'DECIMAL',d:'서비스 이용료'},
+    {k:'',n:'trial_payment',t:'INTEGER',d:'수습 급여(월)'},
+    {k:'',n:'official_payment',t:'INTEGER',d:'정규 급여(월)'},
+    {k:'',n:'actual_working_hours_trial',t:'INTEGER',d:'수습기간 정산월 근무일수 (Shopl_Attendance 기준)'},
+    {k:'',n:'actual_working_hours_official',t:'INTEGER',d:'정규기간 정산월 근무일수 (Shopl_Attendance 기준)'},
+    {k:'',n:'ot_hours',t:'INTEGER',d:'expense 테이블 OT 시간 contract_id 기준 합산'},
 
-    // 서비스 이용료 정보, 계산은 전부 0의 자리에서 반올림 (예: 58.9->59, 51.2->51) // 자동 계산은 아니고 contract_정보는 자동으로 불러와지되 expenses, discount 정보를 확인하여 포맷에 맞게 사람이 기입
-    {k:'',n:'subtotal_fee',t:'INTEGER'}, // 공급가액 (subtotal_fee = (actual_work_fee(=normal_work_fee-pre_discount_fee) + ot_fee + bonus_fee + reimbursable_fee) - (post_discount_fee))
-    {k:'',n:'actual_work_fee',t:'INTEGER'}, // 아래의 normal_work_fee+ot_fee 한 값. 근무 시간 * 시급 -> 실제 근무 시간은 Shopl_Attendance 테이블에서 계산
-    {k:'',n:'normal_work_fee',t:'INTEGER'}, // 정가 기준 실제근무 시간 * 시급
-    {k:'',n:'pre_discount_fee',t:'INTEGER'}, // pre_ind_discount_fee + pre_team_discount_fee. 다만, normal_work_fee보다 크다면 normal_work_fee와 동일
-    {k:'',n:'pre_ind_discount_fee',t:'INTEGER'}, // discount 테이블에서 type이 ind이고 apply_order가 pre라면 discount_amt를 실제 근무시간 만큼 일할 계산한 금액으로 계산
-    {k:'',n:'pre_team_discount_fee',t:'INTEGER'}, // discount 테이블에서 type이 ind이고 apply_order가 pre라면 discount_amt를 실제 근무시간 만큼 일할 계산한 금액으로 계산
-    {k:'',n:'ot_fee',t:'INTEGER'}, // expense 테이블에서 OT 금액을 contract_id로 불러온것
-    {k:'',n:'bonus_fee',t:'INTEGER'}, // expense 테이블에서 Bonus 금액을 contract_id로 불러온것
-    {k:'',n:'reimbursable_fee',t:'INTEGER'}, // expense 테이블에서 Reimbursable 금액을 contract_id로 불러온것
-    {k:'',n:'post_discount_fee',t:'INTEGER'}, // post_ind_discount_fee + post_team_discount_fee. 다만, actual_work_fee보다 크다면 actual_work_fee와 동일
-    {k:'',n:'post_ind_discount_fee',t:'INTEGER'}, // discount 테이블에서 type이 ind이고 apply_order가 post라면 discount_amt를 실제 근무시간 만큼 일할 계산한 금액으로 계산, 그런데 actual_work_fee보다 크다면 actual_work_fee와 동일
-    {k:'',n:'post_team_discount_fee',t:'INTEGER'}, // discount 테이블에서 type이 team이고 apply_order가 post라면 discount_amt를 실제 근무시간 만큼 일할 계산한 금액으로 계산, 그런데 actual_work_fee보다 크다면 actual_work_fee와 동일
-    {k:'',n:'pickdi_cover_fee',t:'INTEGER'}, // expense 테이블에서 pickdi_amount_krw 금액을 합산한 금액
-    {k:'',n:'tax',t:'INTEGER'}, // 세금 (subtotal_fee * 0.1)
-    {k:'',n:'total_fee',t:'INTEGER'}, // 총 금액 (subtotal_fee + tax)
-    {k:'',n:'deposit_refund',t:'INTEGER'}, // 보증금 환불 여부 -> prep_log에서 정보 가져오기
-    {k:'',n:'prepayment_used',t:'INTEGER'}, // 선금 사용 여부 -> prep_log에서 정보 가져오기
-    {k:'',n:'post_whole_discount_fee',t:'INTEGER'}, // 전체 금액 할인 금액
-
-    // 급여 정보, 계산은 전부 0의 자리에서 반올림 (예: 58.9->59, 51.2->51)
-    {k:'',n:'gross_payment_fee',t:'INTEGER'}, // 총 급여 (payment_fee + ot_fee + reimbursable_fee + client_cover_fee + pickdi_payment_fee + extra_payment + health insurance_support_amount + remote_support_amount)
-    {k:'',n:'payment_fee',t:'INTEGER'}, // 근무 급여 금액 (trial_payment_fee + official_payment_fee)
-    {k:'',n:'trial_payment_fee',t:'INTEGER'}, // 수습기간 (contract_start_date ~ trial_end_date) 에 해당하는 정산월 중의 근무일자(Shopl_Attendance 테이블에서 계산) * trial_payment
-    {k:'',n:'official_payment_fee',t:'INTEGER'}, // 정규기간 (trial_end_date+1 ~ contract_expire_date) 에 해당하는 정산 월 중의 근무일자(Shopl_Attendance 테이블에서 계산) * official_payment
-    {k:'',n:'ot_fee',t:'INTEGER'}, // expense 테이블에서 type이 OT인 행의 member_amount_vnd 합산
-    {k:'',n:'reimbursable_fee',t:'INTEGER'}, // expense 테이블에서 type이 OT인 행의 member_amount_vnd 합산
-    {k:'',n:'client_cover_fee',t:'INTEGER'}, // expense 테이블에서 type이 Bonus 행의 client_amount_krw 합산
-    {k:'',n:'pickdi_payment_fee',t:'INTEGER'}, // expense 테이블에서 type이 Bonus인 행의 pickdi_amount_krw 합산
-    {k:'',n:'extra_payment',t:'INTEGER'}, // 초과근무 부담 금액 합산 (예: 명절 근무 시 근무 시간 초과 부담 금액)
-    {k:'',n:'health insurance_support',t:'INTEGER'}, // 건강보험 보장 여부
-    {k:'',n:'health insurance_support_amount',t:'INTEGER'}, // 건강보험 보장 금액
-    {k:'',n:'remote_support_amount',t:'INTEGER'}, // 원격 근무 지원 금액
-    {k:'',n:'tax',t:'INTEGER'}, // 세금
-    {k:'',n:'net_payment_fee',t:'INTEGER'}, // 실 급여 (gross_payment_fee - tax)
-    {k:'fk',n:'bill_id',t:'FK -> Team'}
+    {k:'',n:'subtotal_fee',t:'INTEGER',d:'공급가액. (actual_work_fee + ot_fee + bonus_fee + reimbursable_fee) - post_discount_fee. 계산은 0의 자리 반올림'},
+    {k:'',n:'actual_work_fee',t:'INTEGER',d:'normal_work_fee+ot_fee. 근무시간*시급 (Shopl_Attendance 기준)'},
+    {k:'',n:'normal_work_fee',t:'INTEGER',d:'정가 기준 실제근무 시간 * 시급'},
+    {k:'',n:'pre_discount_fee',t:'INTEGER',d:'pre_ind + pre_team. normal_work_fee 초과 시 normal_work_fee와 동일'},
+    {k:'',n:'pre_ind_discount_fee',t:'INTEGER',d:'discount: apply_type=ind, apply_order=pre → discount_amt를 근무시간 일할 계산'},
+    {k:'',n:'pre_team_discount_fee',t:'INTEGER',d:'discount: apply_type=team, apply_order=pre → discount_amt를 근무시간 일할 계산'},
+    {k:'',n:'ot_fee',t:'INTEGER',d:'expense 테이블 OT 금액 contract_id 기준'},
+    {k:'',n:'bonus_fee',t:'INTEGER',d:'expense 테이블 Bonus 금액 contract_id 기준'},
+    {k:'',n:'reimbursable_fee',t:'INTEGER',d:'expense 테이블 Reimbursable 금액 contract_id 기준'},
+    {k:'',n:'post_discount_fee',t:'INTEGER',d:'post_ind + post_team. actual_work_fee 초과 시 actual_work_fee와 동일'},
+    {k:'',n:'post_ind_discount_fee',t:'INTEGER',d:'discount: ind+post → 근무시간 일할. actual_work_fee 초과 시 actual_work_fee'},
+    {k:'',n:'post_team_discount_fee',t:'INTEGER',d:'discount: team+post → 근무시간 일할. actual_work_fee 초과 시 actual_work_fee'},
+    {k:'',n:'pickdi_cover_fee',t:'INTEGER',d:'expense 테이블 pickdi_amount_krw 합산'},
+    {k:'',n:'tax',t:'INTEGER',d:'세금 (subtotal_fee * 0.1)'},
+    {k:'',n:'total_fee',t:'INTEGER',d:'총 금액 (subtotal_fee + tax)'},
+    {k:'',n:'deposit_refund',t:'INTEGER',d:'보증금 환불 여부 -> prep_log'},
+    {k:'',n:'prepayment_used',t:'INTEGER',d:'선금 사용 여부 -> prep_log'},
+    {k:'',n:'post_whole_discount_fee',t:'INTEGER',d:'전체 금액 할인'},
+    {k:'',n:'gross_payment_fee',t:'INTEGER',d:'총 급여 (payment_fee + ot_fee + reimbursable + client_cover + pickdi_payment + extra + 보험/원격 지원)'},
+    {k:'',n:'payment_fee',t:'INTEGER',d:'근무 급여 (trial_payment_fee + official_payment_fee)'},
+    {k:'',n:'trial_payment_fee',t:'INTEGER',d:'수습기간 정산월 근무일수 * trial_payment'},
+    {k:'',n:'official_payment_fee',t:'INTEGER',d:'정규기간 정산월 근무일수 * official_payment'},
+    {k:'',n:'ot_fee',t:'INTEGER',d:'expense type=OT member_amount_vnd 합산'},
+    {k:'',n:'reimbursable_fee',t:'INTEGER',d:'expense type=Reimbursable member_amount_vnd 합산'},
+    {k:'',n:'client_cover_fee',t:'INTEGER',d:'expense type=Bonus client_amount_krw 합산'},
+    {k:'',n:'pickdi_payment_fee',t:'INTEGER',d:'expense type=Bonus pickdi_amount_krw 합산'},
+    {k:'',n:'extra_payment',t:'INTEGER',d:'초과근무 부담 금액 (예: 명절 근무 초과 부담)'},
+    {k:'',n:'health insurance_support',t:'INTEGER',d:'건강보험 보장 여부'},
+    {k:'',n:'health insurance_support_amount',t:'INTEGER',d:'건강보험 보장 금액'},
+    {k:'',n:'remote_support_amount',t:'INTEGER',d:'원격 근무 지원 금액'},
+    {k:'',n:'tax',t:'INTEGER',d:'세금'},
+    {k:'',n:'net_payment_fee',t:'INTEGER',d:'실 급여 (gross_payment_fee - tax)'},
+    {k:'fk',n:'bill_id',t:'FK -> Team',d:'팀 청구 정보 FK'}
   ]},
-  {id:'expenses',name:'Expenses',theme:'finance',tag:'FINANCE',x:2480,y:1000,fields:[ // 지출 정보, 구글시트로 작성하여 계약 정보랑 추후 합쳐짐(contract_id 기준)
-    {k:'',n:'contract_id',t:'VARCHAR'}, // 직접 작성해야 함. 이후에 contract_id(OT를 한 날짜 기준 active한 contract) 기준으로 contract 테이블들과 합칠 수 있음  
-    {k:'',n:'expense_type',t:'VARCHAR'}, // 지출 유형 : OT, Reimbursable, Bonus, Extra
-    {k:'',n:'expense_detail',t:'TEXT'}, // 지출 상세 내용, type 별로 log테이블의 expense_detail을 행 순으로 text join 한 것
-    {k:'',n:'overtime_hours',t:'INTEGER'}, // OT 근무 시간 합산
-    {k:'',n:'client_cover_fee',t:'DECIMAL'}, // 고객사 부담 금액(원화) 합산
-    {k:'',n:'pickdi_amount_krw',t:'DECIMAL'}, // 픽디 부담 금액(원화) 합산
-    {k:'',n:'member_amount_vnd',t:'DECIMAL'}, // 멤버 지급 금액(베트남 동)   합산
-    {k:'',n:'extra_payment',t:'INTEGER'}, // 초과근무 부담 금액 (예: 명절 근무 시 근무 시간 초과 부담 금액
-    {k:'',n:'apply_month',t:'DATE'}, // 지출 적용 월
+  {id:'expenses',name:'Expenses',theme:'finance',tag:'FINANCE',x:2480,y:1000,desc:'지출 정보 집계. 구글시트 작성 후 contract_id 기준으로 계약 정보와 합침',fields:[
+    {k:'',n:'contract_id',t:'VARCHAR',d:'직접 작성. OT 날짜 기준 active contract로 contract 테이블들과 합침'},
+    {k:'',n:'expense_type',t:'VARCHAR',d:'지출 유형 : OT, Reimbursable, Bonus, Extra'},
+    {k:'',n:'expense_detail',t:'TEXT',d:'지출 상세. log 테이블 expense_detail을 type별 행 순 text join'},
+    {k:'',n:'overtime_hours',t:'INTEGER',d:'OT 근무 시간 합산'},
+    {k:'',n:'client_cover_fee',t:'DECIMAL',d:'고객사 부담 금액(원화) 합산'},
+    {k:'',n:'pickdi_amount_krw',t:'DECIMAL',d:'픽디 부담 금액(원화) 합산'},
+    {k:'',n:'member_amount_vnd',t:'DECIMAL',d:'멤버 지급 금액(베트남 동) 합산'},
+    {k:'',n:'extra_payment',t:'INTEGER',d:'초과근무 부담 금액 (명절 근무 등)'},
+    {k:'',n:'apply_month',t:'DATE',d:'지출 적용 월'}
   ]},
-  {id:'expense_log',name:'Expense_Log',theme:'finance',tag:'FINANCE',x:2480,y:1280,fields:[ // 지출 정보, 구글시트로 작성하여 계약 정보랑 추후 합쳐짐(contract_id 기준)
-    {k:'pk',n:'expense_id',t:'VARCHAR'},
-    {k:'',n:'expense_type',t:'VARCHAR'}, // 지출 유형 : OT, Reimbursable, Bonus, Extra
-    {k:'',n:'contract_id',t:'VARCHAR'}, // 직접 작성해야 함. 이후에 contract_id(OT를 한 날짜 기준 active한 contract) 기준으로 contract 테이블들과 합칠 수 있음
-    {k:'',n:'expense_detail',t:'TEXT'}, // 지출 상세 내용
-    {k:'',n:'overtime_hours',t:'INTEGER'}, // OT 근무 시간
-    {k:'',n:'client_amount_krw',t:'DECIMAL'}, // 고객사 부담 금액(원화)
-    {k:'',n:'pickdi_amount_krw',t:'DECIMAL'}, // 픽디 부담 금액(원화)
-    {k:'',n:'member_amount_vnd',t:'DECIMAL'}, // 멤버 지급 금액(베트남 동)
-    {k:'',n:'extra_payment',t:'INTEGER'}, // 초과근무 부담 금액 (예: 명절 근무 시 근무 시간 초과 부담 금액)
-    {k:'',n:'apply_month',t:'DATE'}, // 지출 적용 월
+  {id:'expense_log',name:'Expense_Log',theme:'finance',tag:'FINANCE',x:2480,y:1280,desc:'지출 로그. 구글시트 작성 후 contract_id 기준으로 계약 정보와 합침. expense_log → expenses 집계',fields:[
+    {k:'pk',n:'expense_id',t:'VARCHAR',d:'지출 로그 고유 id'},
+    {k:'',n:'expense_type',t:'VARCHAR',d:'지출 유형 : OT, Reimbursable, Bonus, Extra'},
+    {k:'',n:'contract_id',t:'VARCHAR',d:'OT 날짜 기준 active contract. contract 테이블들과 합침'},
+    {k:'',n:'expense_detail',t:'TEXT',d:'지출 상세 내용'},
+    {k:'',n:'overtime_hours',t:'INTEGER',d:'OT 근무 시간'},
+    {k:'',n:'client_amount_krw',t:'DECIMAL',d:'고객사 부담 금액(원화)'},
+    {k:'',n:'pickdi_amount_krw',t:'DECIMAL',d:'픽디 부담 금액(원화)'},
+    {k:'',n:'member_amount_vnd',t:'DECIMAL',d:'멤버 지급 금액(베트남 동)'},
+    {k:'',n:'extra_payment',t:'INTEGER',d:'초과근무 부담 금액 (명절 근무 등)'},
+    {k:'',n:'apply_month',t:'DATE',d:'지출 적용 월'}
   ]},
-  {id:'discount',name:'Discount',theme:'finance',tag:'FINANCE',x:2480,y:1560,fields:[
-    {k:'pk',n:'discount_id',t:'VARCHAR'},
-    {k:'',n:'apply_type',t:'ENUM'}, // 할인 적용 유형 : team(공통 할인), ind(개별 할인), whole(전체 할인)
-    {k:'',n:'apply_order',t:'ENUM'}, // 할인 적용 순서 : pre(선적용), post(후적용)
-    {k:'fk',n:'team_id',t:'FK -> Team'}, // apply_type이 team이거나 whole일 경우 사용
-    {k:'',n:'plan',t:'VARCHAR'}, // apply_type이 team일 경우 사용
-    {k:'fk',n:'contract_id',t:'FK -> Contract_Master'}, // apply_type이 team일 경우 사용
-    {k:'',n:'discount_amt',t:'DECIMAL'}, // 할인 금액 (원화)
+  {id:'discount',name:'Discount',theme:'finance',tag:'FINANCE',x:2480,y:1560,desc:'할인 정보. apply_type/apply_order에 따라 정산 시 선적용(pre) 또는 후적용(post)',fields:[
+    {k:'pk',n:'discount_id',t:'VARCHAR',d:'할인 고유 id'},
+    {k:'',n:'apply_type',t:'ENUM',d:'할인 적용 유형 : team(공통), ind(개별), whole(전체)'},
+    {k:'',n:'apply_order',t:'ENUM',d:'할인 적용 순서 : pre(선적용), post(후적용)'},
+    {k:'fk',n:'team_id',t:'FK -> Team',d:'apply_type이 team/whole일 때 사용'},
+    {k:'',n:'plan',t:'VARCHAR',d:'apply_type이 team일 때 사용 (플랜명)'},
+    {k:'fk',n:'contract_id',t:'FK -> Contract_Master',d:'apply_type이 ind일 때 사용'},
+    {k:'',n:'discount_amt',t:'DECIMAL',d:'할인 금액 (원화)'}
   ]},
-  {id:'prep_bal',name:'Prepayment_Balance',theme:'prepay',tag:'PREPAY',x:2480,y:180,fields:[ // 선금/보증금 잔액 정보, prep_log 데이터 바탕
-    {k:'fk',n:'company_id',t:'FK -> Company'}, // 회사 고유 번호
-    {k:'fk',n:'team_id',t:'FK -> Team'}, // 팀 고유 번호
-    {k:'',n:'type',t:'VARCHAR'}, // 선금/보증금 유형 : prepayment (예치금), deposit(보증금)
-    {k:'',n:'balance',t:'INT'}, // 잔액 (마이너스일 경우 반환 필요)
-    {k:'',n:'note',t:'TEXT'}, // 메모
+  {id:'prep_bal',name:'Prepayment_Balance',theme:'prepay',tag:'PREPAY',x:2480,y:180,desc:'선금/보증금 잔액. prep_log 데이터 기반 계산',fields:[
+    {k:'fk',n:'company_id',t:'FK -> Company',d:'회사 고유 번호'},
+    {k:'fk',n:'team_id',t:'FK -> Team',d:'팀 고유 번호'},
+    {k:'',n:'type',t:'VARCHAR',d:'유형 : prepayment(예치금), deposit(보증금)'},
+    {k:'',n:'balance',t:'INT',d:'잔액 (마이너스일 경우 반환 필요)'},
+    {k:'',n:'note',t:'TEXT',d:'메모'}
   ]},
-  {id:'prep_log',name:'Prepayment_Log',theme:'prepay',tag:'PREPAY',x:2480,y:720,fields:[ // 선금/보증금 잔액 변동 정보, 구글시트로 작성하여 prep_bal의 소스데이터가 됨
-    {k:'fk',n:'company_id',t:'VARCHAR'}, // 회사 고유 번호, 직접 작성하여 이후 다른 데이터와 함칠 수 있도록 함
-    {k:'fk',n:'team_id',t:'VARCHAR'}, // 팀 고유 번호, 직접 작성하여 이후 다른 데이터와 함칠 수 있도록 함
-    {k:'',n:'type',t:'VARCHAR'}, // 선금/보증금 유형 : prepayment (예치금), deposit(보증금)
-    {k:'',n:'date',t:'DATE'}, // 잔액 변동 일자, (보증금 상계처리시에는 정산 월의 마지막 날로 작성)
-    {k:'',n:'is_deduction',t:'BOOLEAN'}, // 차감 여부
-    {k:'',n:'amount',t:'INT'}, // 잔액 변동 금액
+  {id:'prep_log',name:'Prepayment_Log',theme:'prepay',tag:'PREPAY',x:2480,y:720,desc:'선금/보증금 변동 로그. 구글시트 작성. prep_bal의 소스 데이터',fields:[
+    {k:'fk',n:'company_id',t:'VARCHAR',d:'회사 고유 번호. 직접 작성 후 다른 데이터와 합침'},
+    {k:'fk',n:'team_id',t:'VARCHAR',d:'팀 고유 번호. 직접 작성 후 다른 데이터와 합침'},
+    {k:'',n:'type',t:'VARCHAR',d:'유형 : prepayment(예치금), deposit(보증금)'},
+    {k:'',n:'date',t:'DATE',d:'잔액 변동 일자. 보증금 상계 시 정산월 마지막 날로 작성'},
+    {k:'',n:'is_deduction',t:'BOOLEAN',d:'차감 여부'},
+    {k:'',n:'amount',t:'INT',d:'잔액 변동 금액'}
   ]}
 ];
 
@@ -439,6 +435,24 @@ TABLES.forEach(function(t) {
   var head = document.createElement('div');
   head.className = 'tbl-head';
   head.innerHTML = '<span class="tbl-nm">' + t.name + '</span><span class="tbl-tag">' + t.tag + '</span>';
+  if (t.desc) {
+    head.style.cursor = 'help';
+    head.addEventListener('mouseenter', function(ev) {
+      var tip = document.getElementById('erd-tooltip');
+      tip.textContent = t.desc;
+      tip.classList.add('visible');
+      tip.style.left = (ev.clientX + 12) + 'px';
+      tip.style.top = (ev.clientY + 12) + 'px';
+    });
+    head.addEventListener('mouseleave', function() {
+      document.getElementById('erd-tooltip').classList.remove('visible');
+    });
+    head.addEventListener('mousemove', function(ev) {
+      var tip = document.getElementById('erd-tooltip');
+      tip.style.left = (ev.clientX + 12) + 'px';
+      tip.style.top = (ev.clientY + 12) + 'px';
+    });
+  }
   div.appendChild(head);
 
   var divLine = document.createElement('div');
