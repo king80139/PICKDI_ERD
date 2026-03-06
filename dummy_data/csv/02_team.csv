@@ -1,0 +1,10 @@
+team_id,team_name,company_id,manager_name,manager_email,bill_email_main
+clt00000000,픽디,comp010,,,
+clt00000002,SB Editor_KR,comp001,이한나 담당,hn.lee@oliveinter.com,hn.lee@oliveinter.com
+clt00000006,붐잉,comp003,이혜승 팀장,hyeseung@boomingkorea.com,jintae@boomingkorea.com
+clt00000011,Anua_C-STAFF,comp002,,,hs.lee@thefounders.kr
+clt00000012,Anua_CS_US,comp002,박지선,js.park@thefounders.kr,dy.kim5@thefounders.kr
+clt00000050,오호라,comp004,장지은 프로,jieun.jang@ohora.com,donghyun.kim@ohora.com
+clt00000054,맥시마이저,comp005,민새미나 매니저,saemina.min@maximizer.team,bill@maximizer.team
+clt00000106,포인트넥션,comp006,한성호 대표,contact@pointnextion.com,tax@pointnextion.com
+clt00000059,온오퍼,comp007,박태환 대표,peter@onoffer.kr,peter@onoffer.kr

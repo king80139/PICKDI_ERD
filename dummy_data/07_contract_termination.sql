@@ -1,0 +1,4 @@
+-- PICKDI ERD 더미 데이터: Contract_termination
+
+INSERT INTO contract_termination (contract_id, termination_reason, termination_detail, termination_date, do_bill, do_pay, Note) VALUES
+('25-02-34-01', 'Terminated', '계약 만료 전 상호 합의 해지', '2025-12-18', TRUE, TRUE, '12월 정산 완료 후 해지');

@@ -12,6 +12,11 @@ PICKDI 프로젝트 데이터베이스 ERD 시각화
    ```
    브라우저에서 http://127.0.0.1:8080/pickdi_erd.html 접속
 
+## index.html 동기화 (GitHub Pages용)
+
+- **자동**: `git commit` 시 pre-commit 훅이 `pickdi_erd.html` → `index.html` 자동 복사
+- **수동**: `./sync-index.sh` 실행
+
 ## 기능
 
 - 테이블 드래그로 위치 이동
