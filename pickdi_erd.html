@@ -101,9 +101,13 @@ svg#lines { position:absolute; top:0; left:0; pointer-events:none; overflow:visi
   padding:16px; box-shadow:-4px 0 20px rgba(0,0,0,0.4);
 }
 #comment-panel.open { right:0; }
-#comment-panel h3 { font-size:12px; color:#94a3b8; margin-bottom:12px; letter-spacing:1px; }
-.tbl-comment { margin-left:6px; opacity:0.6; cursor:pointer; font-size:11px; padding:1px 4px; }
+#comment-panel h3 { font-size:13px; color:#64ffda; margin-bottom:12px; letter-spacing:1px; padding-bottom:8px; border-bottom:1px solid #1e2535; }
+.utterances-block { margin-bottom:24px; }
+.utterances-label { font-size:10px; color:#64748b; margin-bottom:8px; }
+.tbl-comment { margin-left:6px; opacity:0.6; cursor:pointer; font-size:11px; padding:1px 4px; display:inline-flex; align-items:center; gap:2px; }
 .tbl-comment:hover { opacity:1; color:#64ffda; }
+.tbl-comment .tbl-comment-count { font-size:9px; background:#3b82f6; color:#fff; padding:0 4px; border-radius:8px; min-width:14px; text-align:center; }
+.tbl-comment:not(.has-comments) .tbl-comment-count { display:none; }
 </style>
 </head>
 <body>
@@ -453,7 +457,7 @@ TABLES.forEach(function(t) {
 
   var head = document.createElement('div');
   head.className = 'tbl-head';
-  head.innerHTML = '<span class="tbl-nm">' + t.name + '</span><span class="tbl-comment" data-table="' + t.id + '" title="이 테이블에 코멘트">&#128172;</span><span class="tbl-tag">' + t.tag + '</span>';
+  head.innerHTML = '<span class="tbl-nm">' + t.name + '</span><span class="tbl-comment" data-table="' + t.id + '" title="이 테이블에 코멘트">&#128172;<span class="tbl-comment-count"></span></span><span class="tbl-tag">' + t.tag + '</span>';
   if (t.desc) {
     head.style.cursor = 'help';
     head.addEventListener('mouseenter', function(ev) {
@@ -514,10 +518,11 @@ TABLES.forEach(function(t) {
 
   head.querySelector('.tbl-comment').addEventListener('click', function(e) {
     e.stopPropagation();
-    location.hash = e.target.getAttribute('data-table');
+    var tableId = e.currentTarget.getAttribute('data-table');
+    location.hash = tableId;
     document.getElementById('comment-panel').classList.add('open');
     document.getElementById('comment-panel-title').textContent = t.name + ' 코멘트';
-    loadUtterances();
+    loadUtterances(tableId);
   });
   var ox = 0, oy = 0, dragging = false;
   head.addEventListener('mousedown', function(e) {
@@ -674,22 +679,86 @@ document.getElementById('bcomment').onclick = function() {
   location.hash = '';
   document.getElementById('comment-panel-title').textContent = '전체 코멘트';
   document.getElementById('comment-panel').classList.toggle('open');
-  loadUtterances();
+  loadUtterances(null);
 };
-function loadUtterances() {
+function loadUtterances(tableId) {
   var c = document.getElementById('utterances-container');
   c.innerHTML = '';
+  var baseUrl = location.origin + location.pathname.replace(/\/$/, '') + '/';
+  if (tableId) {
+    var issueTerm = baseUrl + '#' + tableId;
+    addUtterancesScript(c, null, issueTerm);
+  } else {
+    fetch('https://api.github.com/repos/king80139/PICKDI_ERD/issues?state=all&per_page=100')
+      .then(function(r) { return r.json(); })
+      .then(function(issues) {
+        var wholePage = issues.filter(function(i) {
+          var t = (i.title || '').trim();
+          return (t.indexOf('#') < 0 || t.split('#')[1] === '') && t.indexOf('PICKDI_ERD') >= 0;
+        });
+        if (wholePage.length > 0) {
+          wholePage.forEach(function(issue) {
+            var wrap = document.createElement('div');
+            wrap.className = 'utterances-block';
+            wrap.innerHTML = '<div class="utterances-label">' + (issue.title || '') + ' (' + (issue.comments || 0) + '개)</div>';
+            c.appendChild(wrap);
+            addUtterancesScript(wrap, issue.number, null);
+          });
+        } else {
+          addUtterancesScript(c, null, baseUrl);
+        }
+      })
+      .catch(function() { addUtterancesScript(c, null, baseUrl); });
+  }
+}
+function addUtterancesScript(container, issueNumber, issueTerm) {
   var s = document.createElement('script');
   s.src = 'https://utteranc.es/client.js';
   s.setAttribute('repo', 'king80139/PICKDI_ERD');
-  s.setAttribute('issue-term', 'url');
+  if (issueNumber) s.setAttribute('issue-number', issueNumber);
+  if (issueTerm) s.setAttribute('issue-term', issueTerm);
   s.setAttribute('theme', 'github-dark');
   s.setAttribute('crossorigin', 'anonymous');
   s.async = true;
-  c.appendChild(s);
+  container.appendChild(s);
 }
-
+function fetchCommentCounts() {
+  fetch('https://api.github.com/repos/king80139/PICKDI_ERD/issues?state=all&per_page=100')
+    .then(function(r) { return r.json(); })
+    .then(function(issues) {
+      var pageTotal = 0;
+      issues.forEach(function(issue) {
+        var title = (issue.title || '').trim();
+        var total = issue.comments || 0;
+        if (total === 0) return;
+        var m = title.match(/#([a-z_0-9]+)$/);
+        var tid = m ? m[1] : null;
+        if (!tid && title.indexOf('PICKDI_ERD') >= 0 && (title.indexOf('#') < 0 || title.split('#')[1] === '')) {
+          pageTotal += total;
+        } else if (tid && tid !== '_page') {
+          var el = document.querySelector('.tbl-comment[data-table="' + tid + '"]');
+          if (el) {
+            var cnt = el.querySelector('.tbl-comment-count');
+            if (cnt) { cnt.textContent = total; el.classList.add('has-comments'); }
+          }
+        }
+      });
+      if (pageTotal > 0) {
+        var btn = document.getElementById('bcomment');
+        if (btn && !btn.querySelector('.comment-badge')) {
+          var b = document.createElement('span');
+          b.className = 'comment-badge';
+          b.textContent = pageTotal;
+          b.style.cssText = 'position:absolute;top:-4px;right:-4px;font-size:9px;background:#3b82f6;color:#fff;padding:0 4px;border-radius:8px;min-width:14px;text-align:center;';
+          btn.style.position = 'relative';
+          btn.appendChild(b);
+        }
+      }
+    })
+    .catch(function() {});
+}
 setTimeout(applyT, 80);
+setTimeout(fetchCommentCounts, 1500);
 </script>
 </body>
 </html>
