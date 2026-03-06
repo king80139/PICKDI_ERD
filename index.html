@@ -163,12 +163,12 @@ var TABLES = [
     {k:'',n:'invoice_email_2',t:'VARCHAR',d:'세금계산서 담당자 이메일 2'},
     {k:'fk',n:'bill_id',t:'VARCHAR',d:'팀 청구 정보 참조'}
   ]},
-  {id:'contract_master',name:'Contract_Master',theme:'contract',tag:'CONTRACT',x:120,y:1100,desc:'자동 생성 Full History Log. Register + Update 병합 결과.',fields:[
-    {k:'pk',n:'contract_id',t:'VARCHAR',d:'amend/extension이 있을 경우 contract_update의 contract_id와 동일'},
-    {k:'pk',n:'parent_contract_id',t:'VARCHAR',d:'amend/extension이 있을 경우 contract_update의 해당 contract_id의 parent_contract_id와 동일'},
+  {id:'contract_master',name:'Contract_Master',theme:'contract',tag:'CONTRACT',x:120,y:1100,desc:'자동 생성 Full History Log. Register + Update(Amendment) 병합 결과.',fields:[
+    {k:'pk',n:'contract_id',t:'VARCHAR',d:'Amendment가 있을 경우 contract_update의 contract_id와 동일'},
+    {k:'pk',n:'parent_contract_id',t:'VARCHAR',d:'Amendment가 있을 경우 contract_update의 parent_contract_id와 동일'},
     {k:'fk',n:'member_id',t:'FK -> Member',d:'계층: member → contract'},
     {k:'fk',n:'team_id',t:'FK -> Team'},
-    {k:'',n:'type',t:'TYPE', d:'Original : 첫계약, Extension : 연장, Amendment : 부속/변경'},
+    {k:'',n:'type',t:'TYPE', d:'Original : 첫계약(Register), Extension : 연장(Register), Amendment : 부속/변경(Update)'},
     {k:'',n:'contract_start_date',t:'DATE',d:'계약 시작일.'},
     {k:'',n:'contract_effective_date',t:'DATE',d:'계약 적용 시작일. 정산 조회: contract_effective <= 정산기준월 인 최근 행.\ntype이 Amendment가 아닐 경우 contract_start_date와 동일.'},
     {k:'',n:'trial_end_date',t:'DATE',d:'수습 종료일.'},
@@ -182,7 +182,7 @@ var TABLES = [
     {k:'',n:'termination_date',t:'DATE',d:'해지 일자 -> contract_termination의 termination_date와 동일'},
     {k:'',n:'termination_reason',t:'VARCHAR',d:'해지 사유 (Termination, Resignation, Expiration, Other)'}
   ]},
-  {id:'contract_reg',name:'Contract_Register',theme:'contract',tag:'CONTRACT',x:120,y:1720,desc:'계약 등록 테이블. 한 개인이 한 고객사와 첫 계약을 맺거나, 계약 해지 후 동일 고객사와 계약을 맺을 때 gap이 있었다면 register에 등록',fields:[
+  {id:'contract_reg',name:'Contract_Register',theme:'contract',tag:'CONTRACT',x:120,y:1720,desc:'계약 등록 테이블. 첫 계약(Original), 연장(Extension) 등록. 계약 해지 후 재계약 시 gap이 있으면 여기 등록',fields:[
     {k:'pk',n:'contract_id',t:'VARCHAR',d:'계약 고유 번호 (YY-포지션-순서)\n\n포지션별 번호:\n01 – PICKDI\n02 – Designer/Video Editor\n03 – CS\n04 – Marketing/Social Media\n05 – Market Research\n06 – IT'},
     {k:'fk',n:'member_id',t:'FK -> Member',d:'멤버 FK'},
     {k:'fk',n:'team_id',t:'FK -> Team',d:'팀 FK'},
@@ -198,16 +198,9 @@ var TABLES = [
     {k:'',n:'service_fee',t:'INTEGER',d:'서비스 이용료(월)'},
     {k:'',n:'created_at',t:'DATETIME',d:'등록 일시'}
   ]},
-  {id:'contract_udt',name:'Contract_Update',theme:'contract',tag:'CONTRACT',x:600,y:1720,desc:'계약 변경(Amendment)/연장(Extension) 등록. parent_contract_id→Original, contract_id→변경/연장 계약',fields:[
-    {k:'fk',n:'parent_contract_id',t:'FK -> Master',d:'[필수값]변경 대상 계약 Original 계약. Amendment/Extension 시에만 사용'},
-    {k:'pk',n:'contract_id',t:'PK -> Master',d:'[필수값]변경 계약 번호. Amendment 시에만 사용\n'},
-    {k:'',n:'type',t:'VARCHAR',d:'Amendment, Extension'},
-    {k:'',n:'contract_effective',t:'DATE',d:'[필수값]Amendment/Extension 적용 시작일.'},
-    {k:'',n:'trial_end_date',t:'DATE',d:'수습 종료일.'},
-    {k:'',n:'contract_expire_date',t:'DATE',d:'계약 만료일.'},
-    {k:'',n:'position',t:'VARCHAR',d:'직무 : Designer/Video Editor, CS specialist, Marketer/Researcher, IT specialist'},
-    {k:'',n:'tier',t:'VARCHAR',d:'계약 플랜 : PICKDI, Pro, Specialist, Fresher, Intern'},
-    {k:'',n:'contract_type',t:'VARCHAR',d:'fulltime, parttime, shortterm'},
+  {id:'contract_udt',name:'Contract_Update',theme:'contract',tag:'CONTRACT',x:600,y:1720,desc:'계약 변경(Amendment) 등록. parent_contract_id→Original, contract_id→변경 계약',fields:[
+    {k:'fk',n:'parent_contract_id',t:'FK -> Master',d:'변경 대상 Original 계약'},
+    {k:'pk',n:'contract_id',t:'PK -> Master',d:'변경 계약 번호'},
     {k:'',n:'monthly_work_hours',t:'INT',d:'약정 근무 시간'},
     {k:'',n:'trial_payment',t:'INTEGER',d:'수습 급여(월)'},
     {k:'',n:'official_payment',t:'INTEGER',d:'정규 급여(월)'},
@@ -278,7 +271,7 @@ var TABLES = [
     {k:'',n:'official_payment',t:'INTEGER',d:'정규 급여(월)'},
     {k:'',n:'actual_working_hours_trial',t:'INTEGER',d:'수습기간 정산월 근무일수 (Shopl_Attendance 기준)'},
     {k:'',n:'actual_working_hours_official',t:'INTEGER',d:'정규기간 정산월 근무일수 (Shopl_Attendance 기준)'},
-    {k:'',n:'ot_hours',t:'INTEGER',d:'expense 테이블 OT 시간 contract_id 기준 합산'},
+    {k:'',n:'ot_hours',t:'INTEGER',d:'overtime 테이블 OT 시간 contract_id 기준 합산'},
 
     {k:'',n:'subtotal_fee',t:'INTEGER',d:'공급가액. (actual_work_fee + ot_fee + bonus_fee + reimbursable_fee) - post_discount_fee. 계산은 0의 자리 반올림'},
     {k:'',n:'actual_work_fee',t:'INTEGER',d:'normal_work_fee+ot_fee. 근무시간*시급 (Shopl_Attendance 기준)'},
@@ -286,13 +279,13 @@ var TABLES = [
     {k:'',n:'pre_discount_fee',t:'INTEGER',d:'pre_ind + pre_team. normal_work_fee 초과 시 normal_work_fee와 동일'},
     {k:'',n:'pre_ind_discount_fee',t:'INTEGER',d:'discount: apply_type=ind, apply_order=pre → discount_amt를 근무시간 일할 계산'},
     {k:'',n:'pre_team_discount_fee',t:'INTEGER',d:'discount: apply_type=team, apply_order=pre → discount_amt를 근무시간 일할 계산'},
-    {k:'',n:'ot_fee',t:'INTEGER',d:'expense 테이블 OT 금액 contract_id 기준'},
-    {k:'',n:'bonus_fee',t:'INTEGER',d:'expense 테이블 Bonus 금액 contract_id 기준'},
-    {k:'',n:'reimbursable_fee',t:'INTEGER',d:'expense 테이블 Reimbursable 금액 contract_id 기준'},
+    {k:'',n:'ot_fee',t:'INTEGER',d:'overtime 테이블 OT 금액 contract_id 기준'},
+    {k:'',n:'bonus_fee',t:'INTEGER',d:'bonus 테이블 금액 contract_id 기준'},
+    {k:'',n:'reimbursable_fee',t:'INTEGER',d:'reimburse 테이블 금액 contract_id 기준'},
     {k:'',n:'post_discount_fee',t:'INTEGER',d:'post_ind + post_team. actual_work_fee 초과 시 actual_work_fee와 동일'},
     {k:'',n:'post_ind_discount_fee',t:'INTEGER',d:'discount: ind+post → 근무시간 일할. actual_work_fee 초과 시 actual_work_fee'},
     {k:'',n:'post_team_discount_fee',t:'INTEGER',d:'discount: team+post → 근무시간 일할. actual_work_fee 초과 시 actual_work_fee'},
-    {k:'',n:'pickdi_cover_fee',t:'INTEGER',d:'expense 테이블 pickdi_amount_krw 합산'},
+    {k:'',n:'pickdi_cover_fee',t:'INTEGER',d:'bonus/reimburse 테이블 pickdi 부담액 합산'},
     {k:'',n:'tax',t:'INTEGER',d:'세금 (subtotal_fee * 0.1)'},
     {k:'',n:'total_fee',t:'INTEGER',d:'총 금액 (subtotal_fee + tax)'},
     {k:'',n:'deposit_refund',t:'INTEGER',d:'보증금 환불 여부 -> prep_log'},
@@ -302,10 +295,10 @@ var TABLES = [
     {k:'',n:'payment_fee',t:'INTEGER',d:'근무 급여 (trial_payment_fee + official_payment_fee)'},
     {k:'',n:'trial_payment_fee',t:'INTEGER',d:'수습기간 정산월 근무일수 * trial_payment'},
     {k:'',n:'official_payment_fee',t:'INTEGER',d:'정규기간 정산월 근무일수 * official_payment'},
-    {k:'',n:'ot_fee',t:'INTEGER',d:'expense type=OT member_amount_vnd 합산'},
-    {k:'',n:'reimbursable_fee',t:'INTEGER',d:'expense type=Reimbursable member_amount_vnd 합산'},
-    {k:'',n:'client_cover_fee',t:'INTEGER',d:'expense type=Bonus client_amount_krw 합산'},
-    {k:'',n:'pickdi_payment_fee',t:'INTEGER',d:'expense type=Bonus pickdi_amount_krw 합산'},
+    {k:'',n:'ot_fee',t:'INTEGER',d:'overtime member_amount_vnd 합산'},
+    {k:'',n:'reimbursable_fee',t:'INTEGER',d:'reimburse member_amount_vnd 합산'},
+    {k:'',n:'client_cover_fee',t:'INTEGER',d:'bonus client_amount_krw 합산'},
+    {k:'',n:'pickdi_payment_fee',t:'INTEGER',d:'bonus pickdi_amount_krw 합산'},
     {k:'',n:'extra_payment',t:'INTEGER',d:'초과근무 부담 금액 (예: 명절 근무 초과 부담)'},
     {k:'',n:'health insurance_support',t:'INTEGER',d:'건강보험 보장 여부'},
     {k:'',n:'health insurance_support_amount',t:'INTEGER',d:'건강보험 보장 금액'},
@@ -314,31 +307,39 @@ var TABLES = [
     {k:'',n:'net_payment_fee',t:'INTEGER',d:'실 급여 (gross_payment_fee - tax)'},
     {k:'fk',n:'bill_id',t:'FK -> Team',d:'팀 청구 정보 FK'}
   ]},
-  {id:'expenses',name:'Expenses',theme:'finance',tag:'FINANCE',x:2480,y:1000,desc:'지출 정보 집계. 구글시트 작성 후 contract_id 기준으로 계약 정보와 합침',fields:[
+  {id:'overtime_log',name:'Overtime_Log',theme:'finance',tag:'FINANCE',x:2480,y:1000,desc:'초과 근무 로그. overtime 테이블의 소스 데이터',fields:[
     {k:'',n:'contract_id',t:'VARCHAR',d:'직접 작성. OT 날짜 기준 active contract로 contract 테이블들과 합침'},
-    {k:'',n:'expense_type',t:'VARCHAR',d:'지출 유형 : OT, Reimbursable, Bonus, Extra'},
-    {k:'',n:'expense_detail',t:'TEXT',d:'지출 상세. log 테이블 expense_detail을 type별 행 순 text join'},
-    {k:'',n:'overtime_hours',t:'INTEGER',d:'OT 근무 시간 합산'},
-    {k:'',n:'client_cover_fee',t:'DECIMAL',d:'고객사 부담 금액(원화) 합산'},
-    {k:'',n:'pickdi_amount_krw',t:'DECIMAL',d:'픽디 부담 금액(원화) 합산'},
-    {k:'',n:'member_amount_vnd',t:'DECIMAL',d:'멤버 지급 금액(베트남 동) 합산'},
-    {k:'',n:'extra_payment',t:'INTEGER',d:'초과근무 부담 금액 (명절 근무 등)'},
-    {k:'',n:'apply_month',t:'DATE',d:'지출 적용 월'}
+    {k:'',n:'date',t:'DATE',d:'초과 근무 일자'},
+    {k:'',n:'overtime_hours',t:'INTEGER',d:'초과 근무 시간'},
+    {k:'',n:'overtime_payment_VND',t:'INTEGER',d:'초과 근무 지급 급여 (베트남동)'},
+    {k:'',n:'overtime_fee_KRW',t:'INTEGER',d:'초과 근무 고객사 부담 금액 (원화)'}
   ]},
-  {id:'expense_log',name:'Expense_Log',theme:'finance',tag:'FINANCE',x:2480,y:1280,desc:'지출 로그. 구글시트 작성 후 contract_id 기준으로 계약 정보와 합침. expense_log → expenses 집계',fields:[
-    {k:'pk',n:'expense_id',t:'VARCHAR',d:'지출 로그 고유 id'},
-    {k:'',n:'expense_type',t:'VARCHAR',d:'지출 유형 : OT, Reimbursable, Bonus, Extra'},
-    {k:'',n:'contract_id',t:'VARCHAR',d:'OT 날짜 기준 active contract. contract 테이블들과 합침'},
-    {k:'',n:'expense_detail',t:'TEXT',d:'지출 상세 내용'},
-    {k:'',n:'overtime_hours',t:'INTEGER',d:'OT 근무 시간'},
-    {k:'',n:'client_amount_krw',t:'DECIMAL',d:'고객사 부담 금액(원화)'},
-    {k:'',n:'pickdi_amount_krw',t:'DECIMAL',d:'픽디 부담 금액(원화)'},
-    {k:'',n:'member_amount_vnd',t:'DECIMAL',d:'멤버 지급 금액(베트남 동)'},
-    {k:'',n:'extra_payment',t:'INTEGER',d:'초과근무 부담 금액 (명절 근무 등)'},
-    {k:'',n:'apply_month',t:'DATE',d:'지출 적용 월'}
+  {id:'overtime',name:'Overtime',theme:'finance',tag:'FINANCE',x:2480,y:1240,desc:'초과 근무 집계. overtime_log 기반. settlement 데이터로 사용',fields:[
+    {k:'',n:'contract_id',t:'VARCHAR',d:'직접 작성. OT 날짜 기준 active contract로 contract 테이블들과 합침'},
+    {k:'',n:'month',t:'DATE',d:'월'},
+    {k:'',n:'monthly_overtime_hours',t:'INTEGER',d:'월 초과 근무 시간'},
+    {k:'',n:'monthly_overtime_payment_VND',t:'INTEGER',d:'월 초과 근무 지급 급여 (베트남동)'},
+    {k:'',n:'monthly_overtime_fee_KRW',t:'INTEGER',d:'월 초과 근무 고객사 부담 금액 (원화)'}
+  ]},
+  {id:'reimburse',name:'Reimburse',theme:'finance',tag:'FINANCE',x:2480,y:1480,desc:'실비 정보. settlement 데이터로 사용',fields:[
+    {k:'',n:'contract_id',t:'VARCHAR',d:'직접 작성.'},
+    {k:'',n:'month',t:'DATE',d:'적용 월'},
+    {k:'',n:'date',t:'DATE',d:'발생 일자'},
+    {k:'',n:'expense_amount_VND',t:'INTEGER',d:'실비 지급액 VND (Net)'},
+    {k:'',n:'expense_amount_KRW',t:'INTEGER',d:'실비 청구액 KRW (Net+VAT)한 값을 원화로 환산'},
+    {k:'',n:'detail',t:'VARCHAR',d:'실비 내용'},
+    {k:'',n:'repeat',t:'VARCHAR',d:'Monthly/Onetime'}
+  ]},
+  {id:'bonus',name:'Bonus',theme:'finance',tag:'FINANCE',x:2480,y:1720,desc:'보너스 정보. settlement 데이터로 사용',fields:[
+    {k:'',n:'contract_id',t:'VARCHAR',d:'직접 작성. OT 날짜 기준 active contract로 contract 테이블들과 합침'},
+    {k:'',n:'month',t:'DATE',d:'월'},
+    {k:'',n:'date',t:'DATE',d:'월'},
+    {k:'',n:'cover_by',t:'VARCHAR',d:'PICKDI / Client'},
+    {k:'',n:'bonus_type',t:'VARCHAR',d:'referral, monthly, loyalty, ...'},
+    {k:'',n:'bonus_amount_VND',t:'INTEGER',d:'보너스 지급액 (Net)'},
+    {k:'',n:'bonus_amount_KRW',t:'INTEGER',d:'보너스 청구액 (Net+VAT)한 값을 원화로 환산. cover_by가 PICKDI일 경우 청구서에는 반영 X'}
   ]},
   {id:'discount',name:'Discount',theme:'finance',tag:'FINANCE',x:2480,y:1560,desc:'할인 정보. apply_type/apply_order에 따라 정산 시 선적용(pre) 또는 후적용(post)',fields:[
-    {k:'pk',n:'discount_id',t:'VARCHAR',d:'할인 고유 id'},
     {k:'',n:'apply_type',t:'ENUM',d:'할인 적용 유형 : team(공통), ind(개별), whole(전체)'},
     {k:'',n:'apply_order',t:'ENUM',d:'할인 적용 순서 : pre(선적용), post(후적용)'},
     {k:'fk',n:'team_id',t:'FK -> Team',d:'apply_type이 team/whole일 때 사용'},
@@ -379,8 +380,10 @@ var RELS = [
   {f:'prep_log',t:'prep_bal',c:'#f87171'},
   {f:'prep_log',t:'settlement',c:'#f87171'},
   {f:'discount',t:'settlement',c:'#f87171'},
-  {f:'expense_log',t:'expenses',c:'#f87171'},
-  {f:'expense_log',t:'settlement',c:'#f87171'}
+  {f:'overtime_log',t:'overtime',c:'#f87171'},
+  {f:'overtime',t:'settlement',c:'#f87171'},
+  {f:'reimburse',t:'settlement',c:'#f87171'},
+  {f:'bonus',t:'settlement',c:'#f87171'}
 ];
 
 var SECTIONS = [
