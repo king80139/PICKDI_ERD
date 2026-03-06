@@ -95,6 +95,13 @@ svg#lines { position:absolute; top:0; left:0; pointer-events:none; overflow:visi
   word-break:keep-all;
 }
 .erd-tooltip.visible { opacity:1; }
+#comment-panel {
+  position:fixed; right:-420px; top:46px; bottom:0; width:400px; background:#111827;
+  border-left:1px solid #1e2535; z-index:99; transition:right 0.3s; overflow-y:auto;
+  padding:16px; box-shadow:-4px 0 20px rgba(0,0,0,0.4);
+}
+#comment-panel.open { right:0; }
+#comment-panel h3 { font-size:12px; color:#94a3b8; margin-bottom:12px; letter-spacing:1px; }
 </style>
 </head>
 <body>
@@ -120,6 +127,11 @@ svg#lines { position:absolute; top:0; left:0; pointer-events:none; overflow:visi
   <button class="cbtn" id="bplus">+</button>
   <button class="cbtn" id="bminus">&minus;</button>
   <button class="cbtn" id="breset">&#8635;</button>
+  <button class="cbtn" id="bcomment" title="코멘트">&#128172;</button>
+</div>
+<div id="comment-panel">
+  <h3>코멘트</h3>
+  <script src="https://utteranc.es/client.js" repo="king80139/PICKDI_ERD" issue-term="pathname" theme="github-dark" crossorigin="anonymous" async></script>
 </div>
 <script>
 var TABLES = [
@@ -650,6 +662,7 @@ function applyT() {
 document.getElementById('bplus').onclick = function() { scale = Math.min(2.5, scale * 1.15); applyT(); };
 document.getElementById('bminus').onclick = function() { scale = Math.max(0.15, scale / 1.15); applyT(); };
 document.getElementById('breset').onclick = function() { scale = 0.35; panX = 60; panY = 60; applyT(); };
+document.getElementById('bcomment').onclick = function() { document.getElementById('comment-panel').classList.toggle('open'); };
 
 setTimeout(applyT, 80);
 </script>
