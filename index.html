@@ -214,21 +214,21 @@ var TABLES = [
     {k:'',n:'final_fee',t:'INTEGER',d:'서비스 이용료(월)'},
     {k:'',n:'created_at',t:'DATETIME',d:'등록 일시'}
   ]},
-  {id:'contract_mem_udt',name:'Contract_Member_Update',theme:'contract',tag:'CONTRACT',x:340,y:1700,desc:'멤버사이드 계약 변경(Amendment) 등록. parent_contract_id→Original, contract_id→변경 계약',fields:[
+  {id:'contract_mem_udt',name:'Contract_Member_Update',theme:'contract',tag:'CONTRACT',x:420,y:1700,desc:'멤버사이드 계약 변경(Amendment) 등록. parent_contract_id→Original, contract_id→변경 계약',fields:[
     {k:'fk',n:'parent_contract_id',t:'FK -> Master',d:'[필수값]변경 대상 Original 계약'},
     {k:'pk',n:'contract_id',t:'PK -> Master',d:'[필수값]변경 계약 번호'},
     {k:'',n:'monthly_work_hours',t:'INT',d:'약정 근무 시간'},
     {k:'',n:'trial_payment',t:'INTEGER',d:'수습 급여(월)'},
     {k:'',n:'official_payment',t:'INTEGER',d:'정규 급여(월)'}
   ]},
-  {id:'contract_cli_udt',name:'Contract_Client_Update',theme:'contract',tag:'CONTRACT',x:560,y:1700,desc:'고객사 사이드 계약 변경(Amendment) 등록. parent_contract_id→Original, contract_id→변경 계약',fields:[
+  {id:'contract_cli_udt',name:'Contract_Client_Update',theme:'contract',tag:'CONTRACT',x:720,y:1700,desc:'고객사 사이드 계약 변경(Amendment) 등록. parent_contract_id→Original, contract_id→변경 계약',fields:[
     {k:'fk',n:'parent_contract_id',t:'FK -> Master',d:'[필수값]변경 대상 Original 계약'},
     {k:'pk',n:'contract_id',t:'PK -> Master',d:'[필수값]변경 계약 번호'},
     {k:'',n:'list_price',t:'INTEGER',d:'서비스 이용료(월)'},
     {k:'',n:'discount_amount',t:'INTEGER',d:'서비스 이용료(월)'},
     {k:'',n:'final_fee',t:'INTEGER',d:'서비스 이용료(월)'}
   ]},
-  {id:'contract_term',name:'Contract_termination',theme:'contract',tag:'CONTRACT',x:670,y:1700,desc:'해당 테이블에 속한 contract_id를 가진 모든 계약들은 해지 처리. (amend contract가 있을 경우 함께 해지 처리)',fields:[
+  {id:'contract_term',name:'Contract_termination',theme:'contract',tag:'CONTRACT',x:1020,y:1700,desc:'해당 테이블에 속한 contract_id를 가진 모든 계약들은 해지 처리. (amend contract가 있을 경우 함께 해지 처리)',fields:[
     {k:'fk',n:'contract_id',t:'FK -> Master',d:'해지된 계약 번호'},
     {k:'',n:'termination_reason',t:'VARCHAR',d:'해지 사유 (Termination, Resignation, Expiration, Other) -> contract_master의 termination_reason와 동일'},
     {k:'',n:'termination_detail',t:'TEXT',d:'해지 상세 사유'},
@@ -415,7 +415,7 @@ var RELS = [
 var SECTIONS = [
   {label:'MEMBER',x:100,y:160,w:320,h:400,c:'#60a5fa'},
   {label:'CLIENT',x:430,y:160,w:400,h:750,c:'#34d399'},
-  {label:'CONTRACT',x:100,y:1060,w:780,h:1050,c:'#c084fc'},
+  {label:'CONTRACT',x:100,y:1060,w:1160,h:1050,c:'#c084fc'},
   {label:'ATTENDANCE / SHOPL',x:1180,y:160,w:500,h:1100,c:'#22d3ee'},
   {label:'SETTLEMENT',x:1700,y:380,w:520,h:1300,c:'#fbbf24'},
   {label:'FINANCE / PREPAY',x:2620,y:160,w:380,h:2050,c:'#f87171'}
