@@ -237,7 +237,7 @@ var TABLES = [
     {k:'',n:'do_pay',t:'BOOLEAN',d:'급여 지급 여부'},
     {k:'',n:'Note',t:'TEXT',d:'메모'}
   ]},
-  {id:'shopl_emp',name:'Shopl_Employees',theme:'attend',tag:'SHOPL',x:1200,y:180,desc:'Shopl 멤버 정보',fields:[
+  {id:'shopl_emp',name:'Shopl_Employees',theme:'attend',tag:'SHOPL',x:1300,y:180,desc:'Shopl 멤버 정보',fields:[
     {k:'pk',n:'user_id',t:'VARCHAR',d:'Shopl 자동 발급 id'},
     {k:'',n:'user_name',t:'VARCHAR',d:'Shopl에 등록된 이름'},
     {k:'fk',n:'custom_id (team)',t:'FK -> Team',d:'Shopl에 기입할 수 있는 id 정보 <- contract_id (Original 계약)'},
@@ -246,7 +246,7 @@ var TABLES = [
     {k:'',n:'hire_dt',t:'DATE',d:'입사 일자'},
     {k:'',n:'workplace_name',t:'VARCHAR',d:'근무지'}
   ]},
-  {id:'shopl_sched',name:'Shopl_Schedule',theme:'attend',tag:'SHOPL',x:1200,y:480,desc:'Shopl 스케줄 정보',fields:[
+  {id:'shopl_sched',name:'Shopl_Schedule',theme:'attend',tag:'SHOPL',x:1300,y:480,desc:'Shopl 스케줄 정보',fields:[
     {k:'fk',n:'user_id',t:'FK -> Shopl_Employees'},
     {k:'fk',n:'custom_id',t:'FK -> Team'},
     {k:'',n:'sch_date',t:'DATE',d:'스케줄 대상 일자'},
@@ -254,26 +254,26 @@ var TABLES = [
     {k:'',n:'scheduled_work_start_time',t:'VARCHAR',d:'예정 근무 시작 시간'},
     {k:'',n:'scheduled_work_end_time',t:'VARCHAR',d:'예정 근무 종료 시간'}
   ]},
-  {id:'shopl_att',name:'Shopl_Attendance',theme:'attend',tag:'SHOPL',x:1200,y:780,desc:'Shopl 출석 정보',fields:[
+  {id:'shopl_att',name:'Shopl_Attendance',theme:'attend',tag:'SHOPL',x:1300,y:780,desc:'Shopl 출석 정보',fields:[
     {k:'fk',n:'user_id',t:'FK -> Shopl_Employees'},
     {k:'fk',n:'custom_id',t:'FK -> Team'},
     {k:'',n:'att_date',t:'DATE',d:'출석 일자'},
     {k:'',n:'punch_in',t:'DATETIME',d:'실제 출근 시간'},
     {k:'',n:'punch_out',t:'DATETIME',d:'실제 퇴근 시간'}
   ]},
-  {id:'shopl_rep',name:'Shopl_Reports',theme:'attend',tag:'SHOPL',x:1200,y:1080,desc:'Shopl 근무 보고서 정보',fields:[
+  {id:'shopl_rep',name:'Shopl_Reports',theme:'attend',tag:'SHOPL',x:1300,y:1080,desc:'Shopl 근무 보고서 정보',fields:[
     {k:'fk',n:'user_id',t:'FK -> Shopl_Employees'},
     {k:'',n:'report_type',t:'VARCHAR',d:'보고서 유형 : 출근/점심휴식/복귀/퇴근 등'},
     {k:'',n:'report_date',t:'DATE',d:'보고서 제출 일시'},
     {k:'',n:'report_result',t:'VARCHAR',d:'보고서 제출 값 : 출근/점심휴식/복귀/퇴근 등'},
     {k:'',n:'report_iamge_link',t:'VARCHAR',d:'보고서 이미지 링크'}
   ]},
-  {id:'holidays',name:'Holidays',theme:'attend',tag:'REF',x:1550,y:200,desc:'한국과 베트남의 공휴일 정보',fields:[
+  {id:'holidays',name:'Holidays',theme:'attend',tag:'REF',x:1650,y:200,desc:'한국과 베트남의 공휴일 정보',fields:[
     {k:'pk',n:'date',t:'DATE',d:'일자'},
     {k:'',n:'holiday_kr',t:'VARCHAR',d:'한국 공휴일 이름'},
     {k:'',n:'holiday_vn',t:'VARCHAR',d:'베트남 공휴일 이름'}
   ]},
-  {id:'settlement',name:'Settlement (정산시트)',theme:'settle',tag:'BILLING',x:1720,y:400,desc:'정산 정보 output 시트',fields:[
+  {id:'settlement',name:'Settlement (정산시트)',theme:'settle',tag:'BILLING',x:1820,y:400,desc:'정산 정보 output 시트',fields:[
     {k:'fk',n:'team_id',t:'FK -> Team'},
     {k:'fk',n:'contract_id',t:'FK -> Contract_Master'},
     {k:'fk',n:'member_id',t:'FK -> Member'},
@@ -363,11 +363,8 @@ var TABLES = [
     {k:'',n:'bonus_amount_KRW',t:'INTEGER',d:'보너스 청구액 (Net+VAT)한 값을 원화로 환산. cover_by가 PICKDI일 경우 청구서에는 반영 X'}
   ]},
   {id:'discount',name:'Discount',theme:'finance',tag:'FINANCE',x:2700,y:1800,desc:'할인 정보. apply_type/apply_order에 따라 정산 시 선적용(pre) 또는 후적용(post)',fields:[
-    {k:'',n:'apply_type',t:'ENUM',d:'할인 적용 유형 : team(공통), ind(개별), whole(전체)'},
-    {k:'',n:'apply_order',t:'ENUM',d:'할인 적용 순서 : pre(선적용), post(후적용)'},
     {k:'fk',n:'team_id',t:'FK -> Team',d:'apply_type이 team/whole일 때 사용'},
-    {k:'',n:'plan',t:'VARCHAR',d:'apply_type이 team일 때 사용 (플랜명)'},
-    {k:'fk',n:'contract_id',t:'FK -> Contract_Master',d:'apply_type이 ind일 때 사용'},
+    {k:'',n:'apply_month',t:'DECIMAL',d:'할인 적용 정산 월'},
     {k:'',n:'discount_amt',t:'DECIMAL',d:'할인 금액 (원화)'},
     {k:'',n:'discount_detail',t:'DECIMAL',d:'할인 상세 내역'}
   ]},
@@ -416,8 +413,8 @@ var SECTIONS = [
   {label:'MEMBER',x:100,y:160,w:320,h:400,c:'#60a5fa'},
   {label:'CLIENT',x:430,y:160,w:400,h:750,c:'#34d399'},
   {label:'CONTRACT',x:100,y:1060,w:1160,h:1050,c:'#c084fc'},
-  {label:'ATTENDANCE / SHOPL',x:1180,y:160,w:500,h:1100,c:'#22d3ee'},
-  {label:'SETTLEMENT',x:1700,y:380,w:520,h:1300,c:'#fbbf24'},
+  {label:'ATTENDANCE / SHOPL',x:1280,y:160,w:500,h:1100,c:'#22d3ee'},
+  {label:'SETTLEMENT',x:1800,y:380,w:520,h:1300,c:'#fbbf24'},
   {label:'FINANCE / PREPAY',x:2620,y:160,w:380,h:2050,c:'#f87171'}
 ];
 
