@@ -65,6 +65,8 @@ svg#lines { position:absolute; top:0; left:0; pointer-events:none; overflow:visi
 .theme-attend .tbl-tag { background:#06b6d422; color:#22d3ee; }
 .theme-prepay .tbl-head { background:linear-gradient(135deg,#3d2010,#4d2815); }
 .theme-prepay .tbl-tag { background:#ea580c22; color:#fb923c; }
+.theme-talent .tbl-head { background:linear-gradient(135deg,#0f3d38,#134e4a); }
+.theme-talent .tbl-tag { background:#14b8a622; color:#2dd4bf; }
 .section-box {
   position:absolute; border-radius:12px; pointer-events:none;
   border:2px solid;
@@ -112,6 +114,7 @@ svg#lines { position:absolute; top:0; left:0; pointer-events:none; overflow:visi
     <div class="ld"><div class="ldot" style="background:#fbbf24"></div>Settlement</div>
     <div class="ld"><div class="ldot" style="background:#f87171"></div>Finance</div>
     <div class="ld"><div class="ldot" style="background:#22d3ee"></div>Attendance</div>
+    <div class="ld"><div class="ldot" style="background:#14b8a6"></div>Talent Pool</div>
     <div style="margin-left:10px;font-size:10px;">드래그/스크롤 이동 &middot; 핀치 줌 확대/축소</div>
   </div>
 </div>
@@ -185,7 +188,8 @@ var TABLES = [
     {k:'',n:'trial_end_date',t:'DATE',d:'수습 종료일.'},
     {k:'',n:'contract_expire_date',t:'DATE',d:'계약 만료일.'},
     {k:'',n:'position',t:'VARCHAR',d:'직무'},
-    {k:'',n:'tier',t:'ENUM',d:'계약 플랜 (PICKDI, Pro, Specialist, Fresher, Intern)'},
+    {k:'',n:'tier_VN',t:'VARCHAR',d:'계약 플랜 : PICKDI, Senior, Specialist, Fresher, Intern'},
+    {k:'',n:'tier_KR',t:'VARCHAR',d:'계약 플랜 : 픽디, 프로, 스탠다드, 신입, 인턴'},
     {k:'',n:'monthly_work_hours',t:'INT',d:'약정 근무 시간'},
     {k:'',n:'list_price',t:'INTEGER',d:'서비스 이용료(월)'},
     {k:'',n:'discount_amount',t:'INTEGER',d:'서비스 이용료(월)'},
@@ -204,7 +208,8 @@ var TABLES = [
     {k:'',n:'trial_end_date',t:'DATE',d:'수습 종료일.'},
     {k:'',n:'contract_expire_date',t:'DATE',d:'계약 만료일.'},
     {k:'',n:'position',t:'VARCHAR',d:'직무 : Designer/Video Editor, CS specialist, Marketer/Researcher, IT specialist'},
-    {k:'',n:'tier',t:'VARCHAR',d:'계약 플랜 : PICKDI, Pro, Specialist, Fresher, Intern'},
+    {k:'',n:'tier_VN',t:'VARCHAR',d:'계약 플랜 : PICKDI, Senior, Specialist, Fresher, Intern'},
+    {k:'',n:'tier_KR',t:'VARCHAR',d:'계약 플랜 : 픽디, 프로, 스탠다드, 신입, 인턴'},
     {k:'',n:'contract_type',t:'VARCHAR',d:'fulltime, parttime, shortterm'},
     {k:'',n:'monthly_work_hours',t:'INT',d:'약정 근무 시간'},
     {k:'',n:'trial_payment',t:'INTEGER',d:'수습 급여(월)'},
@@ -286,7 +291,8 @@ var TABLES = [
     {k:'',n:'contract_expire_date',t:'DATE',d:'계약 만료일.'},
     {k:'',n:'termination_date',t:'DATE',d:'해지 일자 -> contract_term의 termination_date와 동일'},
     {k:'',n:'position',t:'VARCHAR',d:'직무'},
-    {k:'',n:'tier',t:'ENUM',d:'계약 플랜'},
+    {k:'',n:'tier_VN',t:'VARCHAR',d:'계약 플랜 : PICKDI, Senior, Specialist, Fresher, Intern'},
+    {k:'',n:'tier_KR',t:'VARCHAR',d:'계약 플랜 : 픽디, 프로, 스탠다드, 신입, 인턴'},
     {k:'',n:'monthly_work_days',t:'DECIMAL',d:'약정 근무 일수'},
     {k:'',n:'monthly_work_hours',t:'INT',d:'약정 근무 시간'},
     {k:'',n:'list_price',t:'DECIMAL',d:'서비스 이용료 정가'},
@@ -383,6 +389,15 @@ var TABLES = [
     {k:'',n:'action',t:'VARCHAR',d:'add, deduct, refund'},
     {k:'',n:'amount',t:'INT',d:'잔액 변동 금액'},
     {k:'',n:'log_detail',t:'INT',d:'잔액 변동 상세 내역'},
+  ]},
+  {id:'talent_pool',name:'Talent_Pool',theme:'talent',tag:'TALENT',x:2050,y:1520,desc:'계약 종료된 인원 중 우수 인력 풀. 신규 고객사에 빠른 공급용',fields:[
+    {k:'fk',n:'contract_id',t:'FK -> Contract_Master',d:'종료된 계약. 해당 계약을 체결했던 인원을 Talent Pool에 등록'},
+    {k:'',n:'cv_link',t:'VARCHAR',d:'CV(이력서) 링크'},
+    {k:'',n:'portfolio_link',t:'VARCHAR',d:'포트폴리오 링크'},
+    {k:'',n:'assignment_link',t:'VARCHAR',d:'과제(Assignment) 링크'},
+    {k:'',n:'interview_video_link',t:'VARCHAR',d:'인터뷰 영상 링크'},
+    {k:'',n:'interview_note_link',t:'VARCHAR',d:'인터뷰 노트 링크'},
+    {k:'',n:'comment',t:'TEXT',d:'메모/코멘트'}
   ]}
 ];
 
@@ -406,7 +421,8 @@ var RELS = [
   {f:'overtime_log',t:'overtime',c:'#f87171'},
   {f:'overtime',t:'settlement',c:'#f87171'},
   {f:'reimburse',t:'settlement',c:'#f87171'},
-  {f:'bonus',t:'settlement',c:'#f87171'}
+  {f:'bonus',t:'settlement',c:'#f87171'},
+  {f:'contract_master',t:'talent_pool',c:'#14b8a6'}
 ];
 
 var SECTIONS = [
@@ -415,6 +431,7 @@ var SECTIONS = [
   {label:'CONTRACT',x:100,y:1060,w:1160,h:1050,c:'#c084fc'},
   {label:'ATTENDANCE / SHOPL',x:1280,y:160,w:500,h:1100,c:'#22d3ee'},
   {label:'SETTLEMENT',x:1800,y:380,w:520,h:1300,c:'#fbbf24'},
+  {label:'TALENT POOL',x:2020,y:1480,w:340,h:320,c:'#14b8a6'},
   {label:'FINANCE / PREPAY',x:2620,y:160,w:380,h:2050,c:'#f87171'}
 ];
 
@@ -424,6 +441,7 @@ var GROUPS = [
   {label:'CONTRACT (member→contract)',x:350,y:1040,c:'#c084fc'},
   {label:'ATTENDANCE / SHOPL',x:1200,y:140,c:'#22d3ee'},
   {label:'SETTLEMENT',x:1850,y:380,c:'#fbbf24'},
+  {label:'TALENT POOL',x:2050,y:1460,c:'#14b8a6'},
   {label:'FINANCE / PREPAY',x:2700,y:140,c:'#f87171'}
 ];
 
